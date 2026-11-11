@@ -1,0 +1,72 @@
+共 54 次运行（9 个 Case × 2 组 × 3 次）
+[  1/54] C1 B_Agent  #1 标签=CALC               成功=1 工具=analyze_wireless_capacity
+[  2/54] C1 B_Agent  #2 标签=CALC               成功=1 工具=analyze_wireless_capacity
+[  3/54] C1 A_LLM    #2 标签=CALC               成功=1 工具=-
+[  4/54] C1 B_Agent  #3 标签=CALC               成功=1 工具=analyze_wireless_capacity
+[  5/54] C2 A_LLM    #1 标签=CALC               成功=1 工具=-
+[  6/54] C1 A_LLM    #1 标签=CALC               成功=1 工具=-
+[  7/54] C2 A_LLM    #2 标签=CALC               成功=1 工具=-
+[  8/54] C2 A_LLM    #3 标签=CALC               成功=1 工具=-
+[  9/54] C2 B_Agent  #1 标签=CALC               成功=1 工具=analyze_wireless_capacity
+[ 10/54] C2 B_Agent  #2 标签=CALC               成功=1 工具=analyze_wireless_capacity
+[ 11/54] C1 A_LLM    #3 标签=CALC               成功=1 工具=-
+[ 12/54] C2 B_Agent  #3 标签=CALC               成功=1 工具=analyze_wireless_capacity
+[ 13/54] C3 A_LLM    #2 标签=SIGNAL_WEAK        成功=1 工具=-
+[ 14/54] C3 B_Agent  #1 标签=SIGNAL_WEAK        成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 15/54] C3 A_LLM    #1 标签=SIGNAL_WEAK        成功=1 工具=-
+[ 16/54] C3 A_LLM    #3 标签=SIGNAL_WEAK        成功=1 工具=-
+[ 17/54] C3 B_Agent  #2 标签=SIGNAL_WEAK        成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 18/54] C3 B_Agent  #3 标签=SIGNAL_WEAK        成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity → analyze_wireless_capacity
+[ 19/54] C4 A_LLM    #2 标签=CONTENTION         成功=1 工具=-
+[ 20/54] C4 A_LLM    #1 标签=CONTENTION         成功=1 工具=-
+[ 21/54] C4 A_LLM    #3 标签=CONTENTION         成功=1 工具=-
+[ 22/54] C4 B_Agent  #1 标签=CONTENTION         成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 23/54] C4 B_Agent  #2 标签=CONTENTION         成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 24/54] C4 B_Agent  #3 标签=CONTENTION         成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 25/54] C5 A_LLM    #1 标签=UPLINK             成功=1 工具=-
+[ 26/54] C5 A_LLM    #2 标签=UPLINK             成功=1 工具=-
+[ 27/54] C5 B_Agent  #1 标签=UPLINK             成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 28/54] C5 B_Agent  #2 标签=UPLINK             成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 29/54] C5 A_LLM    #3 标签=UPLINK             成功=1 工具=-
+[ 30/54] C5 B_Agent  #3 标签=UPLINK             成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 31/54] C6 A_LLM    #1 标签=INTERFERENCE       成功=1 工具=-
+[ 32/54] C6 A_LLM    #2 标签=INTERFERENCE       成功=1 工具=-
+[ 33/54] C6 A_LLM    #3 标签=INTERFERENCE       成功=1 工具=-
+[ 34/54] C6 B_Agent  #1 标签=INTERFERENCE       成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 35/54] C6 B_Agent  #2 标签=INTERFERENCE       成功=1 工具=list_access_points → get_ap_metrics → analyze_wireless_capacity → get_uplink_status
+[ 36/54] C6 B_Agent  #3 标签=INTERFERENCE       成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 37/54] C7 A_LLM    #1 标签=NORMAL             成功=1 工具=-
+[ 38/54] C7 B_Agent  #1 标签=NORMAL             成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 39/54] C7 A_LLM    #3 标签=NORMAL             成功=1 工具=-
+[ 40/54] C7 A_LLM    #2 标签=NORMAL             成功=1 工具=-
+[ 41/54] C7 B_Agent  #2 标签=INSUFFICIENT_DATA  成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 42/54] C8 A_LLM    #2 标签=INSUFFICIENT_DATA  成功=1 工具=-
+[ 43/54] C8 A_LLM    #1 标签=INSUFFICIENT_DATA  成功=1 工具=-
+[ 44/54] C7 B_Agent  #3 标签=NORMAL             成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity
+[ 45/54] C8 A_LLM    #3 标签=INSUFFICIENT_DATA  成功=1 工具=-
+[ 46/54] C8 B_Agent  #1 标签=INSUFFICIENT_DATA  成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status
+[ 47/54] C8 B_Agent  #2 标签=INSUFFICIENT_DATA  成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status
+[ 48/54] C8 B_Agent  #3 标签=INSUFFICIENT_DATA  成功=1 工具=list_access_points → get_ap_metrics → get_uplink_status
+[ 49/54] C9 A_LLM    #1 标签=INVALID_INPUT      成功=0 工具=-
+[ 50/54] C9 A_LLM    #2 标签=INVALID_INPUT      成功=0 工具=-
+[ 51/54] C9 B_Agent  #1 标签=INVALID_INPUT      成功=0 工具=list_access_points → get_ap_metrics → analyze_wireless_capacity
+[ 52/54] C9 A_LLM    #3 标签=INVALID_INPUT      成功=0 工具=-
+[ 53/54] C9 B_Agent  #2 标签=INVALID_INPUT      成功=0 工具=list_access_points → analyze_wireless_capacity → list_access_points → analyze_wireless_capacity
+[ 54/54] C9 B_Agent  #3 标签=INVALID_INPUT      成功=0 工具=list_access_points → analyze_wireless_capacity → list_access_points → analyze_wireless_capacity
+
+===== 总体结果 =====
+mode: 直接 LLM | runs: 27 | 结论正确率: 1.00 | 关键数值正确率: 0.86 | 任务成功率: 0.89 | Tool调用正确率: None | 平均耗时s: 19.29 | 平均工具调用次数: 0.00
+mode: Agent + Tools | runs: 27 | 结论正确率: 1.00 | 关键数值正确率: 0.86 | 任务成功率: 0.89 | Tool调用正确率: 1.00 | 平均耗时s: 15.79 | 平均工具调用次数: 3.22
+
+===== 各 Case =====
+C1 普通计算           期望=CALC                       A=[CALC, CALC, CALC]  B=[CALC, CALC, CALC]
+C2 单位陷阱计算         期望=CALC                       A=[CALC, CALC, CALC]  B=[CALC, CALC, CALC]
+C3 调查：信号弱         期望=SIGNAL_WEAK                A=[SIGNAL_WEAK, SIGNAL_WEAK, SIGNAL_WEAK]  B=[SIGNAL_WEAK, SIGNAL_WEAK, SIGNAL_WEAK]
+C4 易误判：信号好但拥塞     期望=CONTENTION                 A=[CONTENTION, CONTENTION, CONTENTION]  B=[CONTENTION, CONTENTION, CONTENTION]
+C5 易误判：无线正常但上联瓶颈  期望=UPLINK                     A=[UPLINK, UPLINK, UPLINK]  B=[UPLINK, UPLINK, UPLINK]
+C6 易误判：终端少但干扰     期望=INTERFERENCE               A=[INTERFERENCE, INTERFERENCE, INTERFERENCE]  B=[INTERFERENCE, INTERFERENCE, INTERFERENCE]
+C7 网络侧正常          期望=NORMAL/INSUFFICIENT_DATA   A=[NORMAL, NORMAL, NORMAL]  B=[NORMAL, INSUFFICIENT_DATA, NORMAL]
+C8 信息不完整          期望=INSUFFICIENT_DATA          A=[INSUFFICIENT_DATA, INSUFFICIENT_DATA, INSUFFICIENT_DATA]  B=[INSUFFICIENT_DATA, INSUFFICIENT_DATA, INSUFFICIENT_DATA]
+C9 异常输入           期望=INVALID_INPUT              A=[INVALID_INPUT, INVALID_INPUT, INVALID_INPUT]  B=[INVALID_INPUT, INVALID_INPUT, INVALID_INPUT]
+
+结果已保存到 D:\学习文件\Python\Day4\wifi_diagnosis_agent\results

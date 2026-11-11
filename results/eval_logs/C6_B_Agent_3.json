@@ -1,0 +1,137 @@
+{
+  "case": {
+    "id": "C6",
+    "category": "易误判：终端少但干扰",
+    "goal": "SNR 尚可、终端很少，但信道利用率和重传高，检查能否识别同频干扰而不是拥塞",
+    "input": "实验楼105机房的电脑连 Wi-Fi，信号强度看着还可以，连的人也就几个，可速度很不稳定，时快时慢",
+    "expected_label": [
+      "INTERFERENCE"
+    ],
+    "criteria": "2.4GHz 信道 6，同信道邻居 AP 7 个，底噪 -84 dBm（偏高），利用率 82%、重传 34%，但活跃终端只有 5 → 同频干扰",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 26,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 3,
+  "judge": {
+    "case": "C6",
+    "category": "易误判：终端少但干扰",
+    "mode": "B_Agent",
+    "expected_label": "INTERFERENCE",
+    "predicted_label": "INTERFERENCE",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity",
+    "n_tool_calls": 4,
+    "llm_rounds": 4,
+    "elapsed_s": 18.15,
+    "rep": 3
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"实验楼105\"}",
+      "result": {
+        "keyword": "实验楼105",
+        "match_count": 1,
+        "access_points": [
+          {
+            "ap_id": "AP-LAB1-105",
+            "location": "实验楼105机房",
+            "building": "实验楼",
+            "status": "online"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_ap_metrics",
+      "arguments": "{\"ap_id\": \"AP-LAB1-105\"}",
+      "result": {
+        "ap_id": "AP-LAB1-105",
+        "location": "实验楼105机房",
+        "status": "online",
+        "collected_at": "2026-10-30T20:15:00+08:00",
+        "metrics": {
+          "band": "2.4GHz",
+          "channel": 6,
+          "bandwidth_mhz": 20,
+          "spatial_streams": 1,
+          "rssi_dbm": -58,
+          "noise_floor_dbm": -84,
+          "connected_clients": 9,
+          "active_clients": 5,
+          "channel_utilization_pct": 82,
+          "retry_rate_pct": 34,
+          "same_channel_neighbor_aps": 7,
+          "snr_db": 26
+        },
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_uplink_status",
+      "arguments": "{\"ap_id\": \"AP-LAB1-105\"}",
+      "result": {
+        "ap_id": "AP-LAB1-105",
+        "switch": "SW-LAB1-1F",
+        "port": "Gi1/0/21",
+        "negotiated_speed_mbps": 1000,
+        "rx_mbps": 18,
+        "tx_mbps": 4,
+        "utilization_rx_pct": 1.8,
+        "utilization_tx_pct": 0.4,
+        "peak_direction_utilization_pct": 1.8,
+        "rtt_to_gateway_ms": 1.6,
+        "packet_loss_pct": 0.0,
+        "crc_errors_last_hour": 0,
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 3,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 20, \"snr_db\": 26, \"spatial_streams\": 1, \"active_clients\": 5, \"channel_utilization_pct\": 82}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 20.0,
+          "snr_db": 26.0,
+          "spatial_streams": 1
+        },
+        "snr_linear": 398.11,
+        "shannon_capacity_per_stream_mbps": 172.8,
+        "shannon_capacity_total_mbps": 172.8,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 7,
+          "modulation": "64-QAM 5/6",
+          "min_snr_required_db": 26,
+          "phy_rate_mbps": 86.0,
+          "max_phy_rate_at_mcs11_mbps": 143.4,
+          "phy_rate_ratio_vs_best_pct": 60.0,
+          "estimated_max_throughput_mbps": 55.9,
+          "mac_efficiency_assumed": 0.65
+        },
+        "per_active_client_share_mbps": 11.2,
+        "sharing_note": "空口为 5 个活跃终端共享（理想公平分配的估计值）。",
+        "channel_idle_airtime_pct": 18.0
+      }
+    }
+  ],
+  "answer": "## Incident\n实验楼105机房的电脑连接 Wi-Fi 时，信号强度看起来不错、连接终端也不多，但网速\"时快时慢\"、不稳定。\n\n## Observations\n- 信号侧并不差：RSSI −58 dBm（良好）、底噪 −84 dBm、SNR 26 dB（良好），说明**不是\"信号弱\"导致的问题**。\n- 终端确实不多：已连接 9 台，**活跃仅 5 台**。\n- 但空口很拥挤：**信道利用率 82%**、**重传率 34%**（远超 25% 的\"严重\"阈值）。\n- 工作在 **2.4GHz / 信道 6 / 20MHz / 单空间流**，**同信道邻居 AP 高达 7 个**。\n- 有线侧完全正常：上联协商 1000 Mbps，收发利用率 1.8% / 0.4%，到网关 RTT 1.6 ms，丢包 0%，CRC 错误 0。\n\n## Possible Causes\n- **H1：2.4GHz 同频干扰 + 重传（空口质量问题）**——7 个同信道邻居 AP、34% 重传率。\n- **H2：空口拥塞/竞争导致人均带宽不足**——信道利用率 82%、20MHz 单流，5 个活跃终端共享。\n- **H3：有线上联瓶颈**——用户感觉\"速度不稳\"，需排除有线侧限速或丢包。\n- **H4：信号弱**——用户主观\"信号还可以\"，但需用数据验证。\n\n## Tool Results\n| 项目 | 数值 |\n|---|---|\n| AP | AP-LAB1-105（实验楼105机房，在线） |\n| 频段/信道/带宽/空间流 | 2.4GHz / Ch6 / 20 MHz / 1 |\n| RSSI / 底噪 / SNR | −58 dBm / −84 dBm / 26 dB |\n| 连接数 / 活跃数 | 9 / 5 |\n| 信道利用率 / 重传率 | 82% / 34% |\n| 同信道邻居 AP | 7 |\n| 香农容量（20MHz, SNR 26dB, 1流） | 172.8 Mbps（理论上限） |\n| 估算 MCS | 802.11ax MCS7，64-QAM 5/6，SNR 门限 26 dB |\n| PHY 速率 | 86 Mbps（仅为最佳 MCS11 的 60%） |\n| 估算实际最大吞吐（MAC 效率 0.65） | 55.9 Mbps |\n| 5 个活跃终端人均（理想公平） | 11.2 Mbps |\n| 空口空闲时间 | 仅 18% |\n| 上联 | 1000 Mbps 协商，利用率 1.8%/0.4%，RTT 1.6 ms，丢包 0%，CRC 0 |\n\n## Analysis\n- **H1（同频干扰）— 强支持。** 这正是判据描述的典型形态：\"终端少但信道利用率高、重传高\"。2.4GHz 信道 6 上有 **7 个同信道邻居 AP**（阈值 ≥3 即明显），34% 的重传率说明大量帧因冲突/干扰被反复重发。重传会随机占用额外空口时间，因此用户体感就是\"时快时慢\"——而不是持续慢。\n- **H2（拥塞/竞争）— 部分支持，但不足以单独解释。** 信道利用率 82% 确实超过 70% 的拥塞线，且 20MHz 单流、5 个活跃终端共享，理想人均只有 11.2 Mbps；空闲空口只剩 18%，高峰时实际可分带宽会更低。但注意：**活跃终端只有 5 个，远低于\"单 AP >30 台\"的竞争判据**，因此单纯\"人多抢带宽\"并不能解释 82% 的利用率——多出来的占用更可能来自 H1 的重传。\n- **H3（有线上联）— 被证据削弱。** 千兆协商、双向利用率均低于 2%、RTT 1.6 ms、零丢包、零 CRC 错误，有线侧没有瓶颈迹象。\n- **H4（信号弱）— 被证据否定。** RSSI −58 dBm、SNR 26 dB 均属\"良好\"，且 26 dB 刚好达到 MCS7 门限，链路本身还有 60% 的速率余量未被利用——问题不在信号强度。\n- **补充：** 香农 172.8 Mbps 只是理论上限，86 Mbps 的 PHY 速率在 82% 占用率和 34% 重传下，实际有效吞吐远低于 55.9 Mbps 的估算值，这也解释了\"速度忽高忽低\"。\n\n## Conclusion\n可以排除信号弱（H4）与有线上联瓶颈（H3）。当前证据**最支持同频干扰/高重传（H1）**：7 个同信道邻居 AP + 34% 重传率 + \"终端少但利用率高\"的组合高度吻合；空口拥塞（H2）是叠加因素，但 5 个活跃终端不足以单独造成 82% 的利用率。需说明的是，监控数据只能支持/削弱假设，尚无法定量区分\"邻居 AP 干扰\"与\"机房内其他 2.4GHz 设备（无线鼠标、蓝牙、学生热点）干扰\"各自的贡献，也无法确定干扰是持续存在还是分时段出现（\"时快时慢\"提示可能随时段变化）。\n\n## Recommendation\n1. **让终端迁到 5GHz**：机房电脑优先连接 5GHz SSID，2.4GHz 只留给打印机/物联网设备——这是成本最低、见效最快的一步。\n2. **对该 AP 做频谱/邻区扫描**：确认信道 6 上 7 个邻居 AP 的归属楼宇，考虑把本 AP 调整到 1 或 11 中邻居更少的信道；若能开 40MHz 或增加空间流，容量会明显提升。\n3. **排查机房内非 Wi-Fi 干扰源**：2.4GHz 无线鼠标/键盘、蓝牙耳机、学生手机热点在实验机房里很常见，建议实地用频谱仪或分时段采样。\n4. **观察时变特征**：连续采集 24 小时的信道利用率与重传率，确认\"变慢\"是否集中在某几个时段（如集中上机课），以便区分干扰与临时突发负载。\n5. 有线侧目前无需处理，可留档作为对比基线。\n\n诊断标签: INTERFERENCE"
+}

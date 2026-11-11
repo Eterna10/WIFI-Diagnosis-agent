@@ -1,0 +1,42 @@
+{
+  "case": {
+    "id": "C9",
+    "category": "异常输入",
+    "goal": "不存在的 AP 编号和负数带宽，检查错误处理能力",
+    "input": "帮我查一下 AP-XYZ-999 这个接入点的情况，另外按带宽 -20 MHz、SNR 30 dB 算一下它的信道容量",
+    "expected_label": [
+      "INVALID_INPUT"
+    ],
+    "criteria": "AP-XYZ-999 不存在；带宽不能为负 → 指出输入无效，请用户核对，不能输出任何容量数值或 AP 指标",
+    "numeric_checks": [],
+    "forbidden_numbers": [
+      {
+        "name": "擅自把 -20 改成 20 MHz 后算出的容量(Mbps)",
+        "value": 199.3,
+        "tolerance_pct": 1
+      }
+    ],
+    "required_tools": [],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C9",
+    "category": "异常输入",
+    "mode": "A_LLM",
+    "expected_label": "INVALID_INPUT",
+    "predicted_label": "INVALID_INPUT",
+    "label_correct": 1,
+    "numeric_correct": 0,
+    "task_success": 0,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 11.51,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户希望查询接入点 AP-XYZ-999 的情况，并按“带宽 -20 MHz、SNR 30 dB”计算信道容量。\n\nObservations：\n- 提供的监控数据中不存在 `AP-XYZ-999`。\n- 数据中现有 AP 为：AP-LIB-3F-01、AP-DORM5-512、AP-TEACH2-201、AP-LAB1-105、AP-CANTEEN1-01、AP-GYM-01。\n- 用户给出的带宽为 `-20 MHz`，负带宽在物理上无意义，不能直接代入香农公式。\n- 用户给出的 SNR 为 `30 dB`。\n\nPossible Causes：\n- H1：AP 编号输入错误或该 AP 未纳管，因此监控数据中没有对应记录。\n- H2：带宽参数“-20 MHz”可能为笔误，实际想表达的是 `20 MHz`。\n- H3：若 AP-XYZ-999 真实存在，也可能处于离线、未部署或未被当前监控系统采集，但仅凭现有数据无法确认。\n\nTool Results：\n未使用工具；以下数值来自用户提供的 JSON 数据和公式计算。\n- 在提供的 JSON 中检索不到 `AP-XYZ-999`，因此无法给出该 AP 的 RSSI、底噪、信道利用率、重传率、上联等指标。\n- 香农公式：\\(C = B \\cdot \\log_2(1 + SNR_{linear})\\)\n- \\(SNR_{linear} = 10^{30/10} = 1000\\)\n- 若严格按 \\(B = -20\\) MHz 计算，因带宽为负值，结果无物理意义，不能计算有效信道容量。\n- 若将“-20 MHz”理解为笔误并改用 \\(B = 20\\) MHz，则：\n  \\[\n  C = 20 \\times \\log_2(1+1000) \\approx 20 \\times 9.967 \\approx 199.3\\text{ Mbps}\n  \\]\n  这是香农理论信道容量上限，实际吞吐通常低于该上限。\n\nAnalysis：\n- H1 被支持：监控数据中完全没有 AP-XYZ-999，无法查询其状态。\n- H2 被支持：负带宽不符合物理意义，极可能是输入或格式错误。\n- H3 目前数据不足：不能判断 AP-XYZ-999 是未部署、离线，还是仅未被当前监控数据包含。\n\nConclusion：\n当前无法查询 AP-XYZ-999 的情况；同时不能按负带宽计算有效信道容量。如果带宽应为 20 MHz，则在 SNR 30 dB 条件下，理论香农容量约为 199.3 Mbps。该值仅为理论上限，不代表实际可达速率。\n\nRecommendation：\n请确认 AP 编号是否正确，并检查该 AP 是否已纳管或在线；同时确认带宽参数是否应为 `20 MHz`。若编号和带宽确认无误，再重新查询该 AP 的具体监控指标。\n\n诊断标签: INVALID_INPUT"
+}

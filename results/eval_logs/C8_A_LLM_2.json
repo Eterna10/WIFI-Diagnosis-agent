@@ -1,0 +1,37 @@
+{
+  "case": {
+    "id": "C8",
+    "category": "信息不完整",
+    "goal": "AP 监控采集超时、关键数据缺失时，检查能否承认数据不足而不是编造结论",
+    "input": "体育馆一楼大厅的 Wi-Fi 能连上但上不了网，怎么回事？",
+    "expected_label": [
+      "INSUFFICIENT_DATA"
+    ],
+    "criteria": "AP-GYM-01 状态 unknown，SNMP 采集超时，无线与上联数据均缺失 → 无法确定原因，建议现场检查 AP 供电/上联/DHCP 等",
+    "numeric_checks": [],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C8",
+    "category": "信息不完整",
+    "mode": "A_LLM",
+    "expected_label": "INSUFFICIENT_DATA",
+    "predicted_label": "INSUFFICIENT_DATA",
+    "label_correct": 1,
+    "numeric_correct": "",
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 11.1,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：体育馆一楼大厅 Wi-Fi 可连接但无法上网，疑似 AP-GYM-01 或其上联/认证链路异常。\n\nObservations：监控数据中 AP-GYM-01 的 status 为 unknown，status_detail 显示最近 3 次 SNMP 采集超时，最后一次成功采集为 2026-10-29T09:00:00+08:00；本次数据采集时间为 2026-10-30T20:15:00+08:00。该 AP 的 channel、RSSI、底噪、终端数、信道利用率、重传率、上联 RTT、丢包、CRC 等关键字段均为 null。用户描述为“能连上但上不了网”。\n\nPossible Causes：\nH1：AP-GYM-01 与网管/上联网络失联，可能存在 AP 供电、网线、交换机端口或回程链路故障。\nH2：AP 上联所连交换机、VLAN、网关、DHCP 或 DNS 异常，导致终端虽能关联 SSID 但无法获取地址或访问外网。\nH3：认证/准入系统或终端侧配置问题，例如 Portal/802.1X 认证失败、IP 获取失败、DNS 配置错误。\n\nTool Results：未使用工具。数据来源为提供的 JSON 监控数据。按 collected_at 与最后一次成功采集时间计算，AP-GYM-01 最后成功采集距今约 35 小时 15 分钟；当前该 AP 的无线与上联指标均缺失。\n\nAnalysis：\nH1 被证据支持：AP-GYM-01 状态为 unknown，连续 3 次 SNMP 采集超时，且所有关键指标为 null，说明该 AP 当前管理面不可达或设备/链路异常。但“能连上”这一现象削弱“AP 完全断电”的可能，更可能是 AP 射频仍工作但上联/管理通道异常，或 SNMP 管理通道单独故障。\nH2 被间接支持：用户表现为“能连上但上不了网”，符合上联、VLAN、DHCP、DNS 或网关异常的典型现象；但该 AP 的 uplink、RTT、丢包、CRC 数据全部缺失，无法验证。\nH3 目前无法确认：缺少终端获取 IP 情况、认证日志、DNS 测试结果等数据，既不能支持也不能排除。\n\nConclusion：目前数据不足，无法确定根本原因。可以确定的是 AP-GYM-01 当前监控状态异常且关键指标缺失；“能连上但上不了网”可能与 AP 上联/管理链路故障或上层网络服务异常有关，但不能仅凭现有数据定位到具体原因。\n\nRecommendation：\n1. 现场检查 AP-GYM-01 的供电、PoE、网线和水晶头，确认 AP 指示灯状态。\n2. 检查上联交换机 SW-GYM-01 对应端口的 up/down、VLAN、速率、CRC 错误和 PoE 状态。\n3. 从 AP 管理地址或同网段终端测试到网关、DNS 的连通性，并检查 DHCP 地址池与认证/Portal 日志。\n4. 让用户在体育馆内连接其他正常 AP 或使用有线网络对比，判断是单 AP 问题还是区域性问题。\n5. 若 AP 管理面持续不可达，重启或更换 AP 后继续观察 SNMP 采集是否恢复。\n\n诊断标签: INSUFFICIENT_DATA"
+}

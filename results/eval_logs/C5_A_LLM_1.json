@@ -1,0 +1,44 @@
+{
+  "case": {
+    "id": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "goal": "无线侧全部正常时，检查 Agent 是否会进一步检查有线上联",
+    "input": "第二教学楼201教室，手机信号很好，教室里人也不多，但上课时打开网页延迟很高，视频一直缓冲",
+    "expected_label": [
+      "UPLINK"
+    ],
+    "criteria": "无线侧 SNR 41 dB、利用率 35% 正常；上联协商仅 100 Mbps、下行利用率 93%、RTT 38.5 ms、丢包 2.6%、CRC 错误 1520 → 上联瓶颈/物理链路问题",
+    "numeric_checks": [
+      {
+        "name": "上联利用率(%)",
+        "value": 93,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics",
+      "get_uplink_status"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "mode": "A_LLM",
+    "expected_label": "UPLINK",
+    "predicted_label": "UPLINK",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 18.2,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：第二教学楼201教室手机信号很好、教室人不多，但上课时网页延迟高、视频持续缓冲。\n\nObservations：  \n- AP-TEACH2-201：5GHz，信道 44，带宽 40 MHz，2 条空间流。  \n- RSSI = -52 dBm，底噪 = -93 dBm；信号强度和信噪比均良好。  \n- connected_clients = 25，active_clients = 8，活跃终端不多。  \n- channel_utilization_pct = 35%，retry_rate_pct = 6%，same_channel_neighbor_aps = 0；无线侧未见明显拥塞或同频干扰。  \n- 有线上联：协商速率 100 Mbps，rx = 93 Mbps，tx = 11 Mbps；RTT 到网关 38.5 ms，丢包率 2.6%，最近一小时 CRC 错误 1520。  \n\nPossible Causes：  \n- H1：AP-TEACH2-201 有线上联带宽瓶颈。上联仅协商 100 Mbps，且单方向已接近跑满，可能造成网页延迟和视频缓冲。  \n- H2：上联物理链路或交换机端口异常。CRC 错误、丢包率和 RTT 异常升高，可能由网线、水晶头、跳线、面板或端口问题导致。  \n- H3：无线空口拥塞或干扰。  \n- H4：终端、内容源或校园出口问题。  \n\nTool Results：未使用工具（不能调用程序或工具）。数值直接来自提供的 JSON，并自行计算：  \n- SNR = RSSI − 底噪 = -52 − (-93) = 41 dB，属于良好。  \n- 上联接收方向利用率 = 93 / 100 = 93%，超过参考判据中的 80% 瓶颈阈值。  \n- RTT 38.5 ms > 20 ms；丢包 2.6% > 1%；CRC 错误 1520 次/小时。  \n- 活跃终端 8 个，远低于 30；信道利用率 35% < 70%；重传率 6% < 15%。  \n\nAnalysis：  \n- H1 被支持：上联只协商到 100 Mbps，而接收方向已达 93 Mbps，单方向利用率 93%，构成明显上联带宽瓶颈。  \n- H2 被支持：RTT 高于 20 ms、丢包率高于 1%、CRC 错误达到 1520 次/小时，且端口仅协商 100 Mbps，均指向网线、水晶头、端口等物理层或链路质量问题。  \n- H3 被削弱：RSSI 良好、SNR 41 dB 良好、活跃终端少、信道利用率 35%、重传率 6%、同信道邻居 AP 为 0，没有明显无线拥塞或干扰证据。  \n- H4 证据不足：现有监控已经显示本 AP 到网关的上联 RTT 和丢包异常，因此终端或内容源问题不是首要解释；但仅凭当前数据不能完全排除终端侧或内容源侧因素。  \n\nConclusion：目前可以判断无线侧基本正常，问题主要指向 AP-TEACH2-201 的有线上联链路：既有 100 Mbps 协商和 93% 单方向利用率造成的带宽瓶颈，也有 CRC、丢包、RTT 异常提示的物理链路或端口问题。最终根因仍需现场检查上联链路后确认。  \n\nRecommendation：  \n1. 检查交换机 SW-TEACH2-2F 的 Fa0/7 端口速率/双工配置，确认是否应为千兆但被降速协商。  \n2. 现场更换 AP 上联网线、跳线、水晶头或交换机端口，复测是否恢复 1000 Mbps。  \n3. 观察 CRC 错误是否继续增长，并复测到网关的 RTT 和丢包率。  \n4. 在修复前可临时将 AP 换到正常千兆端口，或限制高带宽视频流量以缓解。  \n5. 修复后再次验证网页延迟和视频缓冲是否改善；无线侧暂不需要优先调整信道或功率。  \n\n诊断标签: UPLINK"
+}

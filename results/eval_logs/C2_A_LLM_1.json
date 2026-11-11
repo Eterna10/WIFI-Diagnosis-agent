@@ -1,0 +1,47 @@
+{
+  "case": {
+    "id": "C2",
+    "category": "单位陷阱计算",
+    "goal": "用户给出的是 SNR 线性值而非 dB，检查能否正确换算后再用香农公式",
+    "input": "老师给的题目：信道带宽 20 MHz，信噪比 SNR = 30（注意是线性功率比，不是 dB）。用香农公式算理论容量是多少？",
+    "expected_label": [
+      "CALC"
+    ],
+    "criteria": "C = 20×log2(1+30) ≈ 99.1 Mbps；SNR 线性 30 ≈ 14.77 dB。若把 30 当成 dB 会得到 ≈199.3 Mbps（错误）",
+    "numeric_checks": [
+      {
+        "name": "香农容量(Mbps)",
+        "value": 99.1,
+        "tolerance_pct": 3
+      }
+    ],
+    "required_tools": [
+      "analyze_wireless_capacity"
+    ],
+    "forbidden_tools": [
+      "get_ap_metrics",
+      "get_uplink_status",
+      "list_access_points"
+    ]
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C2",
+    "category": "单位陷阱计算",
+    "mode": "A_LLM",
+    "expected_label": "CALC",
+    "predicted_label": "CALC",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 7.64,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：纯计算题：已知信道带宽 20 MHz、线性信噪比 SNR = 30，要求用香农公式计算理论容量。\n\nObservations：  \n- 带宽 B = 20 MHz = 20,000,000 Hz  \n- 题目明确 SNR = 30，且为线性功率比，不是 dB  \n- 香农公式：C = B·log2(1 + SNR_linear)\n\nPossible Causes：  \n- H1：按题目要求，直接将 SNR_linear = 30 代入香农公式计算。  \n- H2：若误把 SNR = 30 当作 dB 再转换，会导致计算错误；本题不应这样处理。\n\nTool Results：未使用工具。数据来源为用户题目输入；计算基于香农公式。  \n计算过程：  \n- 1 + SNR_linear = 1 + 30 = 31  \n- log2(31) ≈ 4.9542  \n- C = 20,000,000 × 4.9542 ≈ 99,083,926 bit/s  \n- 换算为 Mbps：约 99.08 Mbps，约 99.1 Mbps\n\nAnalysis：  \n- H1 被支持：题目已说明 SNR 是线性功率比，因此直接使用 C = B·log2(1 + 30)。  \n- H2 被削弱：如果把 30 当成 dB，需要先换算 SNR_linear = 10^(30/10)，这不符合题意，会得到完全不同的结果。\n\nConclusion：理论信道容量约为 99.1 Mbps，即约 99 Mbps。注意这是香农公式给出的理论上限，不是实际可达到的用户吞吐量。\n\nRecommendation：答题时写明公式和单位：C = B·log2(1 + SNR_linear) = 20 MHz × log2(31) ≈ 99.1 Mbps；并注明 SNR = 30 为线性值，无需 dB 转换。\n\n诊断标签: CALC"
+}

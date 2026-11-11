@@ -1,0 +1,43 @@
+{
+  "case": {
+    "id": "C6",
+    "category": "易误判：终端少但干扰",
+    "goal": "SNR 尚可、终端很少，但信道利用率和重传高，检查能否识别同频干扰而不是拥塞",
+    "input": "实验楼105机房的电脑连 Wi-Fi，信号强度看着还可以，连的人也就几个，可速度很不稳定，时快时慢",
+    "expected_label": [
+      "INTERFERENCE"
+    ],
+    "criteria": "2.4GHz 信道 6，同信道邻居 AP 7 个，底噪 -84 dBm（偏高），利用率 82%、重传 34%，但活跃终端只有 5 → 同频干扰",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 26,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 3,
+  "judge": {
+    "case": "C6",
+    "category": "易误判：终端少但干扰",
+    "mode": "A_LLM",
+    "expected_label": "INTERFERENCE",
+    "predicted_label": "INTERFERENCE",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 23.68,
+    "rep": 3
+  },
+  "tool_calls": [],
+  "answer": "Incident：实验楼105机房（AP-LAB1-105）用户反馈 Wi-Fi 信号看起来还可以、连接人数不多，但网速时快时慢。\n\nObservations：\n- AP-LAB1-105 在线，2.4GHz，信道 6，带宽 20 MHz，空间流 1。\n- RSSI 为 -58 dBm，按判据属于良好；底噪 -84 dBm，高于 -85 dBm，环境噪声偏高。\n- connected_clients=9，active_clients=5，终端数不多。\n- channel_utilization_pct=82%，高于 70%，空口利用率偏高。\n- retry_rate_pct=34%，高于 25%，重传严重。\n- same_channel_neighbor_aps=7，同信道邻居 AP 数量明显偏多。\n- 有线上联协商 1000 Mbps，rx_mbps=18、tx_mbps=4，RTT 1.6 ms，丢包 0%，CRC 错误 0。\n\nPossible Causes：\n- H1：2.4GHz 同频干扰严重，导致空口效率下降、重传升高。\n- H2：空口拥塞/竞争激烈，终端虽然少，但邻近 AP 占用同一信道造成速率不稳定。\n- H3：本 AP 终端数或负载过大。该假设初步看较弱。\n- H4：有线上联瓶颈或物理链路故障。该假设初步看较弱。\n- H5：信号弱导致速率下降。该假设初步看较弱。\n- H6：终端侧问题或非 Wi-Fi 干扰源。目前数据不足，需进一步采集。\n\nTool Results：\n未使用工具，以下数值来自提供的 JSON 数据及公式计算：\n- SNR = RSSI − 底噪 = -58 − (-84) = 26 dB。\n- 信道利用率 = 82%，超过 70% 的拥塞参考值。\n- 重传率 = 34%，超过 25% 的严重参考值。\n- 活跃终端 = 5，小于 30，不支持“单 AP 活跃终端过多”为主因。\n- 有线上联接收利用率约 18 / 1000 = 1.8%，发送利用率约 4 / 1000 = 0.4%，远低于 80%。\n- 按香农公式估算：SNR_linear=10^(26/10)≈398.1，C=20 MHz×log2(1+398.1)≈172.8 Mbps；这是理论香农上限，不等同于实际 PHY 速率或用户实测吞吐。\n\nAnalysis：\n- H1 被支持：同信道邻居 AP 有 7 个，且 2.4GHz 底噪偏高、重传率 34%，非常符合同频干扰造成“终端少但信道利用率高、重传高”的特征。\n- H2 被支持：信道利用率 82%、重传率 34%，说明空口竞争和重传明显；但更像是同频干扰和邻区争用共同导致，而不是本 AP 终端数过多。\n- H3 被削弱：活跃终端仅 5 个、连接终端 9 个，远低于“单 AP 活跃终端 >30”的参考阈值。\n- H4 被削弱：上联为 1000 Mbps，双方向利用率都很低，RTT、丢包和 CRC 错误均正常。\n- H5 被削弱：RSSI -58 dBm 属于良好，SNR 26 dB 也达到良好边界，不能把主因归为信号弱。\n- H6 目前无法确定：缺少频谱扫描、终端侧 MCS/PHY 速率、重传原因、非 Wi-Fi 干扰源等信息，不能证明具体干扰源。\n\nConclusion：当前数据最支持 AP-LAB1-105 处于 2.4GHz 同频干扰和空口竞争较严重的环境，导致高重传、高信道利用率和实际吞吐不稳定。“信号弱”和“有线上联瓶颈”基本可排除。由于缺少频谱和终端侧 PHY/MCS 数据，无法精确确定具体干扰源和实际速率下降幅度；建议不要仅凭“用户少”判断网络无问题。\n\nRecommendation：\n1. 对实验楼105机房及周边进行 2.4GHz 频谱和邻区扫描，重点核查信道 6 上的邻居 AP 与非 Wi-Fi 干扰源。\n2. 重新规划 2.4GHz 信道，优先使用 1/6/11 非重叠信道，并评估降低部分 AP 发射功率、关闭冗余 2.4GHz 射频。\n3. 若 AP-LAB1-105 或终端支持 5GHz，建议启用 5GHz 并开启频段引导；若不支持，评估更换双频 AP。\n4. 采集该 AP 的 MCS、PHY 速率、空口时间、重传原因和终端侧 RSSI 波动，复测网关 RTT 与吞吐，确认调整前后变化。\n5. 暂不优先排查有线上联和物理链路，因为当前上联、RTT、丢包和 CRC 指标均正常。\n\n诊断标签: INTERFERENCE"
+}

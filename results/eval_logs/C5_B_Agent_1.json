@@ -1,0 +1,138 @@
+{
+  "case": {
+    "id": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "goal": "无线侧全部正常时，检查 Agent 是否会进一步检查有线上联",
+    "input": "第二教学楼201教室，手机信号很好，教室里人也不多，但上课时打开网页延迟很高，视频一直缓冲",
+    "expected_label": [
+      "UPLINK"
+    ],
+    "criteria": "无线侧 SNR 41 dB、利用率 35% 正常；上联协商仅 100 Mbps、下行利用率 93%、RTT 38.5 ms、丢包 2.6%、CRC 错误 1520 → 上联瓶颈/物理链路问题",
+    "numeric_checks": [
+      {
+        "name": "上联利用率(%)",
+        "value": 93,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics",
+      "get_uplink_status"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 1,
+  "judge": {
+    "case": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "mode": "B_Agent",
+    "expected_label": "UPLINK",
+    "predicted_label": "UPLINK",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity",
+    "n_tool_calls": 4,
+    "llm_rounds": 4,
+    "elapsed_s": 17.81,
+    "rep": 1
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"第二教学楼\"}",
+      "result": {
+        "keyword": "第二教学楼",
+        "match_count": 1,
+        "access_points": [
+          {
+            "ap_id": "AP-TEACH2-201",
+            "location": "第二教学楼201教室",
+            "building": "第二教学楼",
+            "status": "online"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_ap_metrics",
+      "arguments": "{\"ap_id\": \"AP-TEACH2-201\"}",
+      "result": {
+        "ap_id": "AP-TEACH2-201",
+        "location": "第二教学楼201教室",
+        "status": "online",
+        "collected_at": "2026-10-30T20:15:00+08:00",
+        "metrics": {
+          "band": "5GHz",
+          "channel": 44,
+          "bandwidth_mhz": 40,
+          "spatial_streams": 2,
+          "rssi_dbm": -52,
+          "noise_floor_dbm": -93,
+          "connected_clients": 25,
+          "active_clients": 8,
+          "channel_utilization_pct": 35,
+          "retry_rate_pct": 6,
+          "same_channel_neighbor_aps": 0,
+          "snr_db": 41
+        },
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_uplink_status",
+      "arguments": "{\"ap_id\": \"AP-TEACH2-201\"}",
+      "result": {
+        "ap_id": "AP-TEACH2-201",
+        "switch": "SW-TEACH2-2F",
+        "port": "Fa0/7",
+        "negotiated_speed_mbps": 100,
+        "rx_mbps": 93,
+        "tx_mbps": 11,
+        "utilization_rx_pct": 93.0,
+        "utilization_tx_pct": 11.0,
+        "peak_direction_utilization_pct": 93.0,
+        "rtt_to_gateway_ms": 38.5,
+        "packet_loss_pct": 2.6,
+        "crc_errors_last_hour": 1520,
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 3,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 40, \"snr_db\": 41, \"spatial_streams\": 2, \"active_clients\": 8, \"channel_utilization_pct\": 35}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 40.0,
+          "snr_db": 41.0,
+          "spatial_streams": 2
+        },
+        "snr_linear": 12589.25,
+        "shannon_capacity_per_stream_mbps": 544.8,
+        "shannon_capacity_total_mbps": 1089.6,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 11,
+          "modulation": "1024-QAM 5/6",
+          "min_snr_required_db": 38,
+          "phy_rate_mbps": 573.6,
+          "max_phy_rate_at_mcs11_mbps": 573.6,
+          "phy_rate_ratio_vs_best_pct": 100.0,
+          "estimated_max_throughput_mbps": 372.8,
+          "mac_efficiency_assumed": 0.65
+        },
+        "per_active_client_share_mbps": 46.6,
+        "sharing_note": "空口为 8 个活跃终端共享（理想公平分配的估计值）。",
+        "channel_idle_airtime_pct": 65.0
+      }
+    }
+  ],
+  "answer": "## Incident\n第二教学楼 201 教室，手机信号显示良好、教室内人数不多，但上课时网页打开延迟高、视频持续缓冲。\n\n## Observations\n- 无线侧（AP-TEACH2-201，5GHz / 信道 44 / 40 MHz / 2 空间流）：\n  - RSSI −52 dBm（良好，优于 −65）；底噪 −93 dBm（环境干净，低于 −85 干扰判据）\n  - SNR 41 dB（远超 25 dB 良好线）\n  - 连接终端 25 个，活跃终端仅 8 个（远低于 30 的竞争判据）\n  - 信道利用率 35%（低于 70% 拥塞线）；重传率 6%（低于 15% 偏高线）；同信道邻居 AP 0 个\n- 有线侧（上联 SW-TEACH2-2F Fa0/7）：\n  - 协商速率 **100 Mbps**（正常应为 1000 Mbps）\n  - 收方向 93 Mbps，利用率 **93%**（超 80% 瓶颈线）；发方向 11 Mbps\n  - 到网关 RTT **38.5 ms**（异常，应 < 20 ms）；丢包 **2.6%**（异常，应 < 1%）\n  - 最近 1 小时 CRC 错误 **1520**（持续增长，提示物理层问题）\n\n## Possible Causes\n- **H1：有线上联链路瓶颈**——AP 上联只协商到 100 Mbps，且下行方向已跑到 93% 利用率，出口带宽被打满，导致 RTT 升高、丢包，表现为\"信号满格但卡\"。\n- **H2：无线空口拥塞或同频干扰**——教室内终端多、信道利用率高、重传高、邻居 AP 干扰。\n- **H3：物理链路质量故障（网线/水晶头/端口）**——协商降级到百兆 + CRC 错误持续增长 + 丢包，符合线缆或端口物理损伤的典型特征，且很可能是 H1 的成因。\n\n## Tool Results\n| 指标 | 数值 | 判据 |\n|---|---|---|\n| RSSI | −52 dBm | 良好 |\n| 底噪 | −93 dBm | 正常 |\n| SNR | 41 dB | 良好（≥25） |\n| 活跃终端 | 8 | 竞争不明显（<30） |\n| 信道利用率 | 35% | 不拥塞（<70%） |\n| 重传率 | 6% | 正常（<15%） |\n| 同信道邻居 AP | 0 | 无同频干扰 |\n| 香农容量（40MHz/SNR41/2SS） | 1089.6 Mbps | 理论上限 |\n| 估算 MCS | 11（1024-QAM 5/6） | 最高阶，SNR 需求 38 dB |\n| 估算 PHY 速率 | 573.6 Mbps | 该配置满速 |\n| 扣除 MAC 开销后实际吞吐 | 约 372.8 Mbps | 65% 效率 |\n| 每个活跃终端可分带宽 | 约 46.6 Mbps | 8 终端公平分配 |\n| 上联协商速率 | 100 Mbps | 应为 1000 Mbps ❌ |\n| 峰值方向利用率 | 93% | >80% 瓶颈 ❌ |\n| 到网关 RTT / 丢包 | 38.5 ms / 2.6% | 均异常 ❌ |\n| CRC 错误（1h） | 1520 | 物理层告警 ❌ |\n\n## Analysis\n- **H2（无线拥塞/干扰）：被强证据削弱。** 无线侧每一项都指向\"健康\"：RSSI −52、SNR 41、底噪 −93、邻居 AP 0、重传 6%、利用率 35%、活跃终端仅 8。容量计算显示该空口可提供约 372.8 Mbps 实际吞吐，人均 46.6 Mbps，充足支撑网页与视频。无线侧指标无法解释高延迟与缓冲，这与用户\"信号很好、人不多\"的描述完全一致。\n- **H1（有线上联瓶颈）：被支持。** 上联只协商到 100 Mbps，收方向已达 93 Mbps（93%），出口接近饱和；同时 RTT 38.5 ms、丢包 2.6% 明显超标。延迟与丢包出现在\"出教室\"这一段，而不是空口，能直接解释网页慢和视频缓冲——无线再快也被这 100 Mbps 的出口卡住。\n- **H3（物理链路故障）：被支持。** 千兆口协商成百兆、CRC 错误 1 小时 1520 且持续增长、伴随丢包，是网线、水晶头氧化或交换机端口损坏的典型组合。它很可能就是 H1 协商降级的成因，两者可能是同一根因的两面。\n- 注意：CRC 计数为累计统计，无法从单次采样确认\"持续增长\"趋势，需二次采样确认；但当前量级已属异常。\n\n## Conclusion\n问题基本可定位在**有线侧上联**，而非无线覆盖或空口拥塞：无线链路指标全部良好、容量充裕，而 AP 上联仅协商 100 Mbps 且下行利用率 93%、RTT 与丢包均超标，并有大量 CRC 错误。最可能的根因是上联物理链路质量故障导致协商降级，从而形成带宽瓶颈。这一结论基于单次采样，CRC 的增长趋势建议复测确认。\n\n## Recommendation\n1. **优先检查物理链路**：更换/重压 Fa0/7 网线两端水晶头，检查交换机端口是否氧化或损坏，清理后重新插拔；确认两端端口未被人为限速或配置为百兆。\n2. **恢复千兆协商**：处理后确认 `negotiated_speed_mbps` 回到 1000 Mbps，并观察 `crc_errors_last_hour` 是否停止增长。\n3. **复测上联指标**：在千兆恢复后重查收/发利用率（应明显下降）、RTT（目标 < 20 ms）与丢包（目标 < 1%）。\n4. **临时缓解**：若上课期间无法立即处理，可评估在 SW-TEACH2-2F 上将本 AP 流量分流或调整 QoS 优先级，减轻 93% 拥塞对交互类流量的影响。\n5. 无线侧无需调整：信道 44、40 MHz、2 空间流配置与当前环境匹配，不建议为了本例改动功率或信道。\n\n诊断标签: UPLINK"
+}

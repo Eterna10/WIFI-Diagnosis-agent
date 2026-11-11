@@ -1,0 +1,47 @@
+{
+  "case": {
+    "id": "C1",
+    "category": "普通计算",
+    "goal": "检查香农容量、dB→线性换算、MCS 估计是否正确，且纯计算题不应去查询 AP",
+    "input": "我用 Wi-Fi 分析仪测得：信道带宽 40 MHz，SNR 为 20 dB，单空间流。理论信道容量是多少？大概能用什么调制方式、实际能跑多快？",
+    "expected_label": [
+      "CALC"
+    ],
+    "criteria": "香农容量 = 40×log2(1+100) ≈ 266.3 Mbps；SNR 20 dB 约对应 MCS4（16-QAM 3/4），PHY 103.2 Mbps，实际约 60~70 Mbps；需指出理论容量≠实际吞吐量",
+    "numeric_checks": [
+      {
+        "name": "香农容量(Mbps)",
+        "value": 266.3,
+        "tolerance_pct": 3
+      }
+    ],
+    "required_tools": [
+      "analyze_wireless_capacity"
+    ],
+    "forbidden_tools": [
+      "get_ap_metrics",
+      "get_uplink_status",
+      "list_access_points"
+    ]
+  },
+  "mode": "A_LLM",
+  "rep": 3,
+  "judge": {
+    "case": "C1",
+    "category": "普通计算",
+    "mode": "A_LLM",
+    "expected_label": "CALC",
+    "predicted_label": "CALC",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 49.05,
+    "rep": 3
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户询问在 40 MHz 带宽、SNR 20 dB、单空间流条件下的理论信道容量、可能采用的调制方式以及实际吞吐量。\n\nObservations：  \n- 信道带宽：40 MHz  \n- SNR：20 dB  \n- 空间流：单空间流  \n- 这是纯链路计算问题，不使用 JSON 中的 AP 监控指标。\n\nPossible Causes：  \n- H1：理论容量主要由带宽和 SNR 决定，可用香农公式计算。  \n- H2：实际吞吐受 Wi-Fi 实际 MCS、编码率、GI/协议开销、干扰和空口竞争影响，不能直接等于香农上限。  \n- H3：20 dB SNR 下链路自适应较可能落在 64-QAM 高码率；256-QAM 从理论上接近上限，但工程上可能处于边缘。\n\nTool Results：未使用工具；数据来源为用户输入和香农公式。  \n- SNR_linear = 10^(20/10) = 100  \n- log2(1 + 100) = log2(101) ≈ 6.658  \n- C = 40 MHz × 6.658 ≈ 266.33 Mbps  \n- 频谱效率 ≈ 6.66 b/s/Hz  \n- 若假设 64-QAM、5/6 码率：频谱效率 ≈ 6 × 5/6 = 5 b/s/Hz，简化原始速率量级约 40 × 5 = 200 Mbps；按应用层 60%–70% 估算约 120–140 Mbps。  \n- 若粗略用香农上限乘 60%–70%：约 160–186 Mbps，但这是偏乐观的上限估算。\n\nAnalysis：  \n- H1 被支持：20 dB SNR 对应线性 SNR=100，40 MHz 单流理论容量约 266.33 Mbps。这是理论上限，不代表实际 Wi-Fi 一定能达到。  \n- H2 被支持：实际吞吐必须看设备实际 MCS、GI、协议开销、干扰和同时活跃终端；单空间流没有 MIMO 空间复用增益。  \n- H3 部分支持：从香农公式反推，6.66 b/s/Hz 接近 256-QAM 5/6 的理论频谱效率，但 20 dB 属于“一般”SNR，256-QAM 可能不稳定；工程上更现实的是 64-QAM 5/6。  \n- 因此，现有数据只能给出理论容量和粗略实际吞吐范围，不能精确计算应用层速率。\n\nConclusion：理论信道容量约为 266 Mbps。调制方式上，理论上限对应 256-QAM 级别，但 20 dB SNR 下实际更可能稳定使用 64-QAM 5/6；若按 64-QAM 5/6 估算，实际应用层吞吐约 120–140 Mbps。若设备能稳定跑到接近 256-QAM 5/6，则乐观估算约 160–186 Mbps，但 20 dB 下不宜作为保证值。\n\nRecommendation：查看 Wi-Fi 分析仪中的实际 MCS、PHY Rate、GI、重传率和信道利用率；在低干扰、单用户、近距离条件下复测。若实际速率明显低于上述范围，应进一步检查同频干扰、空口竞争、AP 上联和终端能力。\n\n诊断标签: CALC"
+}

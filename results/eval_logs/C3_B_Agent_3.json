@@ -1,0 +1,167 @@
+{
+  "case": {
+    "id": "C3",
+    "category": "调查：信号弱",
+    "goal": "只给出地点，检查能否先定位 AP，再根据 RSSI/SNR 判断为信号弱",
+    "input": "宿舍5号楼512房间晚上 Wi-Fi 经常卡，网页打开很慢，帮我看看是什么原因",
+    "expected_label": [
+      "SIGNAL_WEAK"
+    ],
+    "criteria": "RSSI -79 dBm、SNR 12 dB（<15 dB 差），重传率 28%；负载低、上联正常 → 信号弱/覆盖不足",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 12,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 3,
+  "judge": {
+    "case": "C3",
+    "category": "调查：信号弱",
+    "mode": "B_Agent",
+    "expected_label": "SIGNAL_WEAK",
+    "predicted_label": "SIGNAL_WEAK",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity → analyze_wireless_capacity",
+    "n_tool_calls": 5,
+    "llm_rounds": 4,
+    "elapsed_s": 20.95,
+    "rep": 3
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"宿舍5号楼\"}",
+      "result": {
+        "keyword": "宿舍5号楼",
+        "match_count": 1,
+        "access_points": [
+          {
+            "ap_id": "AP-DORM5-512",
+            "location": "宿舍5号楼512房间",
+            "building": "宿舍5号楼",
+            "status": "online"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_ap_metrics",
+      "arguments": "{\"ap_id\": \"AP-DORM5-512\"}",
+      "result": {
+        "ap_id": "AP-DORM5-512",
+        "location": "宿舍5号楼512房间",
+        "status": "online",
+        "collected_at": "2026-10-30T20:15:00+08:00",
+        "metrics": {
+          "band": "5GHz",
+          "channel": 149,
+          "bandwidth_mhz": 80,
+          "spatial_streams": 2,
+          "rssi_dbm": -79,
+          "noise_floor_dbm": -91,
+          "connected_clients": 6,
+          "active_clients": 4,
+          "channel_utilization_pct": 30,
+          "retry_rate_pct": 28,
+          "same_channel_neighbor_aps": 1,
+          "snr_db": 12
+        },
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_uplink_status",
+      "arguments": "{\"ap_id\": \"AP-DORM5-512\"}",
+      "result": {
+        "ap_id": "AP-DORM5-512",
+        "switch": "SW-DORM5-5F",
+        "port": "Gi1/0/03",
+        "negotiated_speed_mbps": 1000,
+        "rx_mbps": 62,
+        "tx_mbps": 9,
+        "utilization_rx_pct": 6.2,
+        "utilization_tx_pct": 0.9,
+        "peak_direction_utilization_pct": 6.2,
+        "rtt_to_gateway_ms": 1.8,
+        "packet_loss_pct": 0.0,
+        "crc_errors_last_hour": 0,
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 3,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 80, \"snr_db\": 12, \"spatial_streams\": 2, \"active_clients\": 4, \"channel_utilization_pct\": 30}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 80.0,
+          "snr_db": 12.0,
+          "spatial_streams": 2
+        },
+        "snr_linear": 15.85,
+        "shannon_capacity_per_stream_mbps": 326.0,
+        "shannon_capacity_total_mbps": 651.9,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 2,
+          "modulation": "QPSK 3/4",
+          "min_snr_required_db": 11,
+          "phy_rate_mbps": 216.2,
+          "max_phy_rate_at_mcs11_mbps": 1201.0,
+          "phy_rate_ratio_vs_best_pct": 18.0,
+          "estimated_max_throughput_mbps": 140.5,
+          "mac_efficiency_assumed": 0.65
+        },
+        "per_active_client_share_mbps": 35.1,
+        "sharing_note": "空口为 4 个活跃终端共享（理想公平分配的估计值）。",
+        "channel_idle_airtime_pct": 70.0
+      }
+    },
+    {
+      "step": 3,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 80, \"snr_db\": 25, \"spatial_streams\": 2, \"active_clients\": 4, \"channel_utilization_pct\": 30}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 80.0,
+          "snr_db": 25.0,
+          "spatial_streams": 2
+        },
+        "snr_linear": 316.23,
+        "shannon_capacity_per_stream_mbps": 664.8,
+        "shannon_capacity_total_mbps": 1329.5,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 6,
+          "modulation": "64-QAM 3/4",
+          "min_snr_required_db": 24,
+          "phy_rate_mbps": 648.6,
+          "max_phy_rate_at_mcs11_mbps": 1201.0,
+          "phy_rate_ratio_vs_best_pct": 54.0,
+          "estimated_max_throughput_mbps": 421.6,
+          "mac_efficiency_assumed": 0.65
+        },
+        "per_active_client_share_mbps": 105.4,
+        "sharing_note": "空口为 4 个活跃终端共享（理想公平分配的估计值）。",
+        "channel_idle_airtime_pct": 70.0
+      }
+    }
+  ],
+  "answer": "## Incident\n宿舍5号楼512房间，晚上 Wi-Fi 卡顿、网页打开慢（用户主观感受是\"慢/卡\"，但 AP 在线、有线链路健康）。\n\n## Observations\n- 定位到唯一对应 AP：**AP-DORM5-512**（宿舍5号楼512房间），状态 online，采样时间 2026-10-30 20:15（正是晚上症状时段）。\n- 无线侧：5GHz / 信道 149 / 80 MHz / 2 空间流；**RSSI −79 dBm（弱）**；底噪 −91 dBm；**SNR 12 dB（差，< 15 dB）**；连接终端 6 个、活跃终端 4 个；**信道利用率 30%**；**重传率 28%（严重）**；同信道邻居 AP 仅 1 个。\n- 有线侧：协商速率 1000 Mbps，收/发 62 / 9 Mbps，峰值方向利用率 6.2%，到网关 RTT 1.8 ms，丢包 0%，近 1 小时 CRC 错误 0。\n- 数据完整性：两项查询均返回 data_quality = complete。\n\n## Possible Causes\n- **H1 信号弱 / SNR 不足**：终端侧（或 AP 覆盖边缘）RSSI −79 dBm、SNR 12 dB，导致只能跑低阶 MCS、重传高、实际吞吐大幅缩水。\n- **H2 空口拥塞（终端过多）**：晚间宿舍多人同时上网，空口竞争导致人均带宽下降。\n- **H3 同频/环境干扰**：同信道邻居 AP 或环境噪声抬升底噪，造成重传高。\n- **H4 有线上联瓶颈**：AP 上联链路带宽不足、双工不匹配或物理层错误。\n\n## Tool Results\n| 项目 | 数值 | 判据 |\n|---|---|---|\n| RSSI | −79 dBm | < −75，弱 |\n| SNR | 12 dB | < 15，差 |\n| 底噪 | −91 dBm | 低于 −85，环境噪声不高 |\n| 活跃终端 | 4 | < 30 |\n| 信道利用率 | 30% | < 70%，不拥塞 |\n| 重传率 | 28% | > 25%，严重 |\n| 同信道邻居 AP | 1 | < 3，干扰不明显 |\n| 上联协商速率 | 1000 Mbps | 正常 |\n| 峰值方向利用率 | 6.2% | < 80% |\n| 到网关 RTT / 丢包 / CRC | 1.8 ms / 0% / 0 | 全部正常 |\n\n容量计算（analyze_wireless_capacity）：\n- 当前 SNR 12 dB：SNR 线性值 15.85，香农上限 651.9 Mbps（双流）；MCS 估计 **MCS2 / QPSK 3/4**，PHY 速率 **216.2 Mbps**（仅为最佳 MCS11 的 18%）；扣 MAC 开销后估算最大吞吐 **140.5 Mbps**，4 个活跃终端人均 **≈ 35 Mbps**。\n- 参考对照（若 SNR 提升到 25 dB，其余条件相同）：MCS6 / 64-QAM 3/4，PHY 648.6 Mbps，估算吞吐 **421.6 Mbps**，人均 **≈ 105 Mbps**（约为现状 3 倍）。\n\n## Analysis\n- **H1（信号弱）— 被强力支持。** SNR 12 dB 是唯一明显越界的无线指标：工具据此把链路压到 MCS2（PHY 仅为峰值的 18%），估算人均仅约 35 Mbps，与\"网页打开慢\"的体验一致。同时 28% 的重传率可以由低 SNR 下解调失败、需反复重传来解释。80 MHz 宽带在弱信号下会分摊到大量子载波、每子载波功率密度更低，进一步压低 MCS。\n- **H2（空口拥塞）— 被削弱。** 活跃终端仅 4 个（远低于 30）、信道利用率 30%（远低于 70%），人均带宽下降不是因为终端争抢。\n- **H3（同频干扰）— 被削弱。** 底噪 −91 dBm 属正常偏低水平，同信道邻居 AP 只有 1 个（判据 ≥3 才算明显）。若真是同频干扰，典型特征是\"终端少但利用率高、重传高\"，而这里利用率只有 30%，与干扰假设不符；重传更可能来自低 SNR 而非碰撞。\n- **H4（有线上联瓶颈）— 被削弱。** 千兆协商正常，双向利用率仅 6.2% / 0.9%，RTT 1.8 ms、丢包 0%、CRC 0，有线侧完全健康，可以排除。\n- 需要说明的局限：AP 级 RSSI/SNR 通常是汇总或某代表终端的值，未反映房间内各位置的分布；若只有个别终端卡，也可能是该终端网卡/位置问题。目前数据足以判定\"瓶颈在无线侧、且指向弱信号\"，但 AP 为何在 512 房间形成弱覆盖（安装位置、墙体遮挡、天线方向、终端距离）尚需现场勘测确认。\n\n## Conclusion\n问题几乎可以确定不在有线侧，也不是终端过多或同频干扰，而是**无线信号弱、SNR 不足（−79 dBm / 12 dB）**导致链路降阶 + 28% 重传，使实际可用带宽和人均带宽大幅下降。晚上症状更明显可能与作息高峰下的重传/重试放大有关，但现有指标不支持\"拥塞\"为主因。具体弱覆盖成因（AP 安装位置、遮挡、终端距离）目前数据不足，需现场验证。\n\n## Recommendation\n1. 现场勘测：在 512 房间内多点测量 RSSI/SNR（床铺、书桌、靠窗/靠门位置），确认是房间整体弱覆盖还是局部死角（例如离 AP 远或隔墙）。\n2. 检查 AP-DORM5-512 的安装位置、天线朝向与遮挡（金属柜、吊顶、管道），必要时移位或调整朝向；若房间纵深大/墙体衰减高，评估增加一台 AP 或加装定向天线。\n3. 可尝试把该 AP 信道带宽从 80 MHz 降到 40 MHz，提升每子载波功率密度、减少弱信号下的重传，作为临时缓解手段后再复测 SNR 与重传率。\n4. 若仅个别终端卡顿，先排查该终端网卡驱动、是否只连 2.4GHz、省电模式等客户端因素。\n5. 复测验证：调整后重查 AP-DORM5-512 的 RSSI / SNR / 重传率，目标 SNR ≥ 25 dB、重传率 < 15%。\n\n诊断标签: SIGNAL_WEAK"
+}

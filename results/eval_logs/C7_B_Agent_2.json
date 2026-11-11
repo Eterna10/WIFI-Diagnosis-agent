@@ -1,0 +1,133 @@
+{
+  "case": {
+    "id": "C7",
+    "category": "网络侧正常",
+    "goal": "所有网络指标正常时，检查能否如实说网络侧正常，而不是硬找一个原因",
+    "input": "第一食堂一楼吃饭的时候刷视频总是卡，是不是食堂 Wi-Fi 有问题？",
+    "expected_label": [
+      "NORMAL",
+      "INSUFFICIENT_DATA"
+    ],
+    "criteria": "SNR 34 dB、活跃终端 6、利用率 28%、上联利用率 14%、RTT 1.5 ms → 网络侧正常，建议检查终端或视频服务侧",
+    "numeric_checks": [],
+    "required_tools": [
+      "get_ap_metrics",
+      "get_uplink_status"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 2,
+  "judge": {
+    "case": "C7",
+    "category": "网络侧正常",
+    "mode": "B_Agent",
+    "expected_label": "NORMAL/INSUFFICIENT_DATA",
+    "predicted_label": "INSUFFICIENT_DATA",
+    "label_correct": 1,
+    "numeric_correct": "",
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity",
+    "n_tool_calls": 4,
+    "llm_rounds": 4,
+    "elapsed_s": 21.43,
+    "rep": 2
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"第一食堂\"}",
+      "result": {
+        "keyword": "第一食堂",
+        "match_count": 1,
+        "access_points": [
+          {
+            "ap_id": "AP-CANTEEN1-01",
+            "location": "第一食堂一楼就餐区",
+            "building": "第一食堂",
+            "status": "online"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_ap_metrics",
+      "arguments": "{\"ap_id\": \"AP-CANTEEN1-01\"}",
+      "result": {
+        "ap_id": "AP-CANTEEN1-01",
+        "location": "第一食堂一楼就餐区",
+        "status": "online",
+        "collected_at": "2026-10-30T20:15:00+08:00",
+        "metrics": {
+          "band": "5GHz",
+          "channel": 157,
+          "bandwidth_mhz": 80,
+          "spatial_streams": 2,
+          "rssi_dbm": -60,
+          "noise_floor_dbm": -94,
+          "connected_clients": 20,
+          "active_clients": 6,
+          "channel_utilization_pct": 28,
+          "retry_rate_pct": 5,
+          "same_channel_neighbor_aps": 1,
+          "snr_db": 34
+        },
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_uplink_status",
+      "arguments": "{\"ap_id\": \"AP-CANTEEN1-01\"}",
+      "result": {
+        "ap_id": "AP-CANTEEN1-01",
+        "switch": "SW-CANTEEN1",
+        "port": "Gi1/0/05",
+        "negotiated_speed_mbps": 1000,
+        "rx_mbps": 140,
+        "tx_mbps": 22,
+        "utilization_rx_pct": 14.0,
+        "utilization_tx_pct": 2.2,
+        "peak_direction_utilization_pct": 14.0,
+        "rtt_to_gateway_ms": 1.5,
+        "packet_loss_pct": 0.0,
+        "crc_errors_last_hour": 0,
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 3,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 80, \"snr_db\": 34, \"spatial_streams\": 2, \"active_clients\": 6, \"channel_utilization_pct\": 28}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 80.0,
+          "snr_db": 34.0,
+          "spatial_streams": 2
+        },
+        "snr_linear": 2511.89,
+        "shannon_capacity_per_stream_mbps": 903.6,
+        "shannon_capacity_total_mbps": 1807.2,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 9,
+          "modulation": "256-QAM 5/6",
+          "min_snr_required_db": 32,
+          "phy_rate_mbps": 960.8,
+          "max_phy_rate_at_mcs11_mbps": 1201.0,
+          "phy_rate_ratio_vs_best_pct": 80.0,
+          "estimated_max_throughput_mbps": 624.5,
+          "mac_efficiency_assumed": 0.65
+        },
+        "per_active_client_share_mbps": 104.1,
+        "sharing_note": "空口为 6 个活跃终端共享（理想公平分配的估计值）。",
+        "channel_idle_airtime_pct": 72.0
+      }
+    }
+  ],
+  "answer": "**Incident**：用户在第一食堂一楼就餐时用 Wi-Fi 刷视频总是卡顿/缓冲，怀疑食堂 Wi-Fi 有问题。\n\n**Observations**（校园网管数据，采集时间 2026-10-30 20:15，AP-CANTEEN1-01 第一食堂一楼就餐区，在线）\n- 无线侧：5GHz / 信道 157 / 80 MHz / 2 空间流；RSSI −60 dBm（良好）；底噪 −94 dBm；SNR 34 dB（良好）\n- 负载侧：连接终端 20 个，**活跃终端仅 6 个**；信道利用率 28%；重传率 5%；同信道邻居 AP 1 个\n- 有线侧：上联协商 1000 Mbps；收 140 Mbps / 发 22 Mbps，峰值方向利用率 14%；到网关 RTT 1.5 ms；丢包 0%；近 1 小时 CRC 错误 0\n- 关键限制：采样时间是 20:15，**不属于就餐高峰时段**（活跃终端只有 6 个也印证了这一点），与用户投诉的时间窗不重合。\n\n**Possible Causes**\n- H1 就餐高峰期空口拥塞：高峰时该 AP 关联/活跃终端数远超 6 个，空口竞争导致人均带宽骤降、视频缓冲。\n- H2 无线干扰（同频邻居、环境噪声、非 Wi-Fi 干扰）：导致重传升高、速率下降。\n- H3 有线侧上联瓶颈或链路质量问题：上联拥塞、RTT 抖动、CRC 错误导致体验下降。\n- H4 终端侧/服务端侧因素：终端连到 2.4GHz 或其他远处 AP、信号波动、终端省电策略、视频源本身限速。\n\n**Tool Results**\n- list_access_points(\"第一食堂\") → 命中 1 个 AP：AP-CANTEEN1-01（第一食堂一楼就餐区，online）\n- get_ap_metrics(AP-CANTEEN1-01)：见上，data_quality = complete\n- get_uplink_status(AP-CANTEEN1-01)：见上，data_quality = complete\n- analyze_wireless_capacity(80 MHz, SNR 34 dB, 2 流, 6 活跃终端, 利用率 28%)：\n  - SNR 线性值 2511.89；香农容量 903.6 Mbps/流，合计 1807.2 Mbps（理论上限）\n  - 估计 MCS9 / 256-QAM 5/6（门限 32 dB），PHY 速率 960.8 Mbps，为该配置最高 PHY 的 80%\n  - 按 MAC 效率 0.65 估算实际吞吐上限 ≈ 624.5 Mbps\n  - 6 个活跃终端理想公平分配 ≈ 104.1 Mbps/终端；空口空闲时间约 72%\n\n**Analysis**\n- H1（高峰拥塞）：**当前数据无法支持也无法否证**。样本中活跃终端仅 6 个、利用率 28%、人均 104 Mbps，完全够刷视频；但样本取自 20:15 非就餐时段，不能代表午/晚餐高峰。若高峰活跃终端超过 30 个，按同一 PHY 速率人均会降到 20 Mbps 量级，加上竞争抖动就可能出现缓冲。这是目前最需要补充证据的假设。\n- H2（干扰）：**被削弱**。底噪 −94 dBm 很低，同信道邻居 AP 仅 1 个（判据为 ≥3 才明显），重传率 5%（<15%），信道利用率 28%，没有干扰特征。\n- H3（有线侧瓶颈）：**被削弱**。上联 1000 Mbps 正常协商，峰值方向利用率仅 14%（<80%），RTT 1.5 ms（<20 ms），丢包 0%，CRC 错误 0，有线侧没有任何瓶颈或物理层劣化迹象。\n- H4（终端/服务端侧）：**无法排除**。现有工具只反映 AP 侧聚合指标，看不到单终端连接频段、漫游记录和视频源状态；用户抱怨\"信号看起来不错但卡\"，与终端侧因素并不矛盾。\n- 综合来看：在采样时刻，这个 AP 的无线侧与有线侧指标都处于健康水平，香农/PHY 估算也说明链路能力充裕，**现有数据不足以定位用户遇到卡顿的原因**，需要覆盖投诉时间窗的数据。\n\n**Conclusion**：目前数据不足，无法确定第一食堂一楼视频卡顿的原因。可以确定的是：在 20:15 这一采样时刻，AP-CANTEEN1-01 的覆盖（SNR 34 dB）、空口负载（利用率 28%、重传 5%）、干扰（同信道邻居 1）和有线上联（1000 Mbps、RTT 1.5 ms、0 丢包、0 CRC）全部正常，不存在信号弱、干扰或上联瓶颈问题；但这些数据不覆盖就餐高峰，不能据此判定\"食堂 Wi-Fi 没问题\"。\n\n**Recommendation**\n1. 在就餐高峰（约 11:30–12:30、17:30–18:30）对 AP-CANTEEN1-01 重新采集 get_ap_metrics 与 get_uplink_status，重点看活跃终端数、信道利用率、重传率是否越限（活跃 >30、利用率 >70%、重传 >15%）。\n2. 请用户在卡顿时反馈终端实际连接的 BSSID、频段（2.4G/5G）、RSSI 和测速结果，判断是否连到了邻区 AP 或 2.4GHz。\n3. 确认食堂一楼是否还有除 AP-CANTEEN1-01 之外的 AP 覆盖（可 list_access_points(\"食堂\") 全量核对），避免高峰时单 AP 承载过多终端；如确认高峰拥塞，考虑增加 AP 或开启负载均衡/频段引导。\n4. 若高峰指标依然正常但用户仍卡顿，再排查视频源、认证/网关策略和终端侧设置，必要时抓包看单终端重传与漫游事件。\n5. 当前采集到的 CRC 与上联数据正常，暂不需要更换网线或端口。\n\n诊断标签: INSUFFICIENT_DATA"
+}

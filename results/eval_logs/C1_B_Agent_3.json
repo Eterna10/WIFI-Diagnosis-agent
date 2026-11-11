@@ -1,0 +1,75 @@
+{
+  "case": {
+    "id": "C1",
+    "category": "普通计算",
+    "goal": "检查香农容量、dB→线性换算、MCS 估计是否正确，且纯计算题不应去查询 AP",
+    "input": "我用 Wi-Fi 分析仪测得：信道带宽 40 MHz，SNR 为 20 dB，单空间流。理论信道容量是多少？大概能用什么调制方式、实际能跑多快？",
+    "expected_label": [
+      "CALC"
+    ],
+    "criteria": "香农容量 = 40×log2(1+100) ≈ 266.3 Mbps；SNR 20 dB 约对应 MCS4（16-QAM 3/4），PHY 103.2 Mbps，实际约 60~70 Mbps；需指出理论容量≠实际吞吐量",
+    "numeric_checks": [
+      {
+        "name": "香农容量(Mbps)",
+        "value": 266.3,
+        "tolerance_pct": 3
+      }
+    ],
+    "required_tools": [
+      "analyze_wireless_capacity"
+    ],
+    "forbidden_tools": [
+      "get_ap_metrics",
+      "get_uplink_status",
+      "list_access_points"
+    ]
+  },
+  "mode": "B_Agent",
+  "rep": 3,
+  "judge": {
+    "case": "C1",
+    "category": "普通计算",
+    "mode": "B_Agent",
+    "expected_label": "CALC",
+    "predicted_label": "CALC",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "analyze_wireless_capacity",
+    "n_tool_calls": 1,
+    "llm_rounds": 2,
+    "elapsed_s": 10.01,
+    "rep": 3
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 40, \"snr_db\": 20, \"spatial_streams\": 1}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 40.0,
+          "snr_db": 20.0,
+          "spatial_streams": 1
+        },
+        "snr_linear": 100.0,
+        "shannon_capacity_per_stream_mbps": 266.3,
+        "shannon_capacity_total_mbps": 266.3,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 4,
+          "modulation": "16-QAM 3/4",
+          "min_snr_required_db": 18,
+          "phy_rate_mbps": 103.2,
+          "max_phy_rate_at_mcs11_mbps": 286.8,
+          "phy_rate_ratio_vs_best_pct": 36.0,
+          "estimated_max_throughput_mbps": 67.1,
+          "mac_efficiency_assumed": 0.65
+        }
+      }
+    }
+  ],
+  "answer": "## Incident\n用户用 Wi-Fi 分析仪测得自身链路的参数，想知道：40 MHz、SNR 20 dB、单空间流条件下的**理论信道容量、可用调制方式与估算实际吞吐**。纯计算问题，无故障投诉。\n\n## Observations\n- 信道带宽：40 MHz\n- SNR：20 dB（由用户实测给出）\n- 空间流：1 条\n- 标准假设：工具按 802.11ax（Wi-Fi 6）、0.8 µs GI 估算\n- 参考判据：SNR 20 dB 落在「15–25 dB 一般」区间，未达「≥25 dB 良好」\n\n## Possible Causes\n（本题为容量估算，不含故障排查，故此处仅说明限制速率的技术因素）\n\n- H1：SNR 只有 20 dB，限制了可用的高阶 MCS，使单流 PHY 速率远低于该带宽上限——这是最主要约束。\n- H2：MAC 层开销（前导、竞争、ACK、GI、帧间隔）使实际吞吐显著低于香农上限与 PHY 速率，与 SNR 无关，是固定损耗。\n- H3：40 MHz 若处于 2.4GHz 或拥挤频段，实际可用带宽可能被邻居 AP 占用而缩水（本次未提供信道/邻居数据，无法评估）。\n\n## Tool Results\n`analyze_wireless_capacity` 返回：\n- SNR 线性值：100（= 10^(20/10)）\n- 香农理论容量（单流）：**266.3 Mbps**（总容量同为 266.3 Mbps）\n- MCS 估计：802.11ax **MCS 4，16-QAM 3/4**，该 MCS 最低需要 18 dB SNR（20 dB 略高于门槛）\n- 对应 PHY 速率：**103.2 Mbps**；该配置最好情况（MCS 11）可达 286.8 Mbps，当前仅为后者的 36.0%\n- 估算实际最大吞吐（按 MAC 效率 0.65）：**约 67.1 Mbps**\n\n## Analysis\n- H1 **被支持**：香农上限 266.3 Mbps 与实际可用的 103.2 Mbps PHY 速率差距很大，说明 20 dB 的 SNR 只够稳定跑到 16-QAM 3/4，无法使用 256-QAM/1024-QAM 等高阶调制。若把 SNR 提到 ≥25 dB，MCS 可上一个台阶，PHY 速率将明显提高。\n- H2 **被支持**：香农值是理论上限，工具按 65% MAC 效率折算得 67.1 Mbps，即 PHY 103.2 Mbps 中约三分之一被协议开销吃掉，属正常现象。\n- H3 **目前数据不足**：没有信道编号、频段、信道利用率与同信道邻居 AP 数据，无法判断是否存在同频干扰或拥塞导致的额外损失；67.1 Mbps 是「空口较干净」前提下的估算。\n\n## Conclusion\n在 40 MHz、单流、SNR 20 dB 条件下：\n- 理论（香农）上限约 **266 Mbps**；\n- 实际可协商到的调制是 **16-QAM 3/4（MCS 4）**，PHY 速率约 **103 Mbps**；\n- 扣除 MAC 开销后，**实际吞吐量预期约 65–70 Mbps**（工具估算 67.1 Mbps），且这是单个终端独占空口时的数值，多终端共享会进一步下降。\n数据未包含频段与干扰信息，实际能否达到该估算值是**不确定**的。\n\n## Recommendation\n1. 若想提速：优先改善 SNR（靠近 AP、减少遮挡、改用 5GHz 频段、检查 AP 天线方向），20→25 dB 以上可望升到更高阶 MCS。\n2. 用分析仪补测：频段与信道号、信道利用率、重传率、同信道邻居 AP 数，以验证是否存在干扰/拥塞压制实际吞吐。\n3. 条件允许时用 80 MHz 或双空间流（需终端支持），可比提升 SNR 带来更大的绝对值增益。\n4. 实测吞吐可用 iperf3 做对比，若远低于 60 Mbps，再回来排查干扰或上联问题。\n\n诊断标签: CALC"
+}

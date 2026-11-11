@@ -1,0 +1,136 @@
+{
+  "case": {
+    "id": "C9",
+    "category": "异常输入",
+    "goal": "不存在的 AP 编号和负数带宽，检查错误处理能力",
+    "input": "帮我查一下 AP-XYZ-999 这个接入点的情况，另外按带宽 -20 MHz、SNR 30 dB 算一下它的信道容量",
+    "expected_label": [
+      "INVALID_INPUT"
+    ],
+    "criteria": "AP-XYZ-999 不存在；带宽不能为负 → 指出输入无效，请用户核对，不能输出任何容量数值或 AP 指标",
+    "numeric_checks": [],
+    "forbidden_numbers": [
+      {
+        "name": "擅自把 -20 改成 20 MHz 后算出的容量(Mbps)",
+        "value": 199.3,
+        "tolerance_pct": 1
+      }
+    ],
+    "required_tools": [],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 2,
+  "judge": {
+    "case": "C9",
+    "category": "异常输入",
+    "mode": "B_Agent",
+    "expected_label": "INVALID_INPUT",
+    "predicted_label": "INVALID_INPUT",
+    "label_correct": 1,
+    "numeric_correct": 0,
+    "task_success": 0,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → analyze_wireless_capacity → list_access_points → analyze_wireless_capacity",
+    "n_tool_calls": 4,
+    "llm_rounds": 3,
+    "elapsed_s": 12.3,
+    "rep": 2
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"AP-XYZ-999\"}",
+      "result": {
+        "keyword": "AP-XYZ-999",
+        "match_count": 0,
+        "access_points": [],
+        "note": "没有匹配的 AP，请换一个更短的关键词（例如楼宇名称），或传入空字符串列出全部 AP。"
+      }
+    },
+    {
+      "step": 1,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": -20, \"snr_db\": 30}",
+      "result": {
+        "error": "带宽必须为正数，收到 -20.0 MHz。"
+      }
+    },
+    {
+      "step": 2,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"\"}",
+      "result": {
+        "keyword": "",
+        "match_count": 6,
+        "access_points": [
+          {
+            "ap_id": "AP-LIB-3F-01",
+            "location": "图书馆三楼自习区",
+            "building": "图书馆",
+            "status": "online"
+          },
+          {
+            "ap_id": "AP-DORM5-512",
+            "location": "宿舍5号楼512房间",
+            "building": "宿舍5号楼",
+            "status": "online"
+          },
+          {
+            "ap_id": "AP-TEACH2-201",
+            "location": "第二教学楼201教室",
+            "building": "第二教学楼",
+            "status": "online"
+          },
+          {
+            "ap_id": "AP-LAB1-105",
+            "location": "实验楼105机房",
+            "building": "实验楼",
+            "status": "online"
+          },
+          {
+            "ap_id": "AP-CANTEEN1-01",
+            "location": "第一食堂一楼就餐区",
+            "building": "第一食堂",
+            "status": "online"
+          },
+          {
+            "ap_id": "AP-GYM-01",
+            "location": "体育馆一楼大厅",
+            "building": "体育馆",
+            "status": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 20, \"snr_db\": 30, \"spatial_streams\": 1}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 20.0,
+          "snr_db": 30.0,
+          "spatial_streams": 1
+        },
+        "snr_linear": 1000.0,
+        "shannon_capacity_per_stream_mbps": 199.3,
+        "shannon_capacity_total_mbps": 199.3,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 8,
+          "modulation": "256-QAM 3/4",
+          "min_snr_required_db": 30,
+          "phy_rate_mbps": 103.2,
+          "max_phy_rate_at_mcs11_mbps": 143.4,
+          "phy_rate_ratio_vs_best_pct": 72.0,
+          "estimated_max_throughput_mbps": 67.1,
+          "mac_efficiency_assumed": 0.65
+        }
+      }
+    }
+  ],
+  "answer": "## Incident\n用户要求查询接入点 **AP-XYZ-999** 的运行情况，并按\"带宽 -20 MHz、SNR 30 dB\"计算信道容量。两个输入都存在格式/有效性问题。\n\n## Observations\n- 用关键词 `AP-XYZ-999` 检索：`match_count = 0`，没有任何匹配的 AP。\n- 列出全部在线 AP 后，系统中实际存在的 6 个 AP 为：AP-LIB-3F-01（图书馆三楼自习区）、AP-DORM5-512（宿舍5号楼512）、AP-TEACH2-201（第二教学楼201）、AP-LAB1-105（实验楼105机房）、AP-CANTEEN1-01（第一食堂一楼）、AP-GYM-01（体育馆一楼大厅，状态 unknown）。**其中没有 AP-XYZ-999**，编号疑似拼写错误或并不属于本校园网。\n- 容量计算请求返回错误：`带宽必须为正数，收到 -20.0 MHz`。带宽是物理量，不能为负值，`-20 MHz` 属于无效参数（大概率是把 `20 MHz` 误写成 `-20`，或者是把\"减号\"当成了连接符）。\n\n## Possible Causes\n- H1：AP 编号输入错误或该 AP 不属于本校园网（证据：全量列表 6 个 AP 中无此编号）。\n- H2：参数输入格式错误 —— 带宽被写成了负数（证据：计算工具直接拒绝 `-20 MHz`）。\n- H3（仅讨论，无证据支持）：若该 AP 真实存在于未纳管的设备上，则可能是监控系统未采集到它的数据，因此无法评估。\n\n## Tool Results\n- `list_access_points(\"AP-XYZ-999\")` → `match_count: 0`，`access_points: []`\n- `list_access_points(\"\")` → 共 6 个 AP，无 AP-XYZ-999\n- `analyze_wireless_capacity(bandwidth_mhz=-20, snr_db=30)` → `error: 带宽必须为正数，收到 -20.0 MHz`\n- 参考试算（假定带宽为 **20 MHz**、SNR 30 dB、单空间流）：\n  - SNR 线性值 = 1000 → 香农容量 = **199.3 Mbps**（理论单流上限）\n  - 估计 MCS：802.11ax MCS 8，256-QAM 3/4，PHY 速率 **103.2 Mbps**（为该带宽最佳 MCS11 的 72%）\n  - 按 MAC 效率 0.65 估算实际吞吐上限 ≈ **67.1 Mbps**\n\n## Analysis\n- H1（编号错误）**被证据支持**：系统内 6 个 AP 全部列出，不含 AP-XYZ-999，因此无法查询其无线侧或有线侧指标；在不更正编号前，任何关于它的诊断都是猜测。\n- H2（参数无效）**被证据支持**：带宽为负在物理上无意义，工具已明确报错。需要注意的是，SNR 30 dB 本身是合理的良好值（≥25 dB），问题只出在带符号。\n- H3 **无法证实也无法排除**：缺少任何针对该编号的监控数据，属于\"数据不足\"。\n\n## Conclusion\n**当前数据不足，无法对 AP-XYZ-999 做任何网络诊断。** 可以确定的两点是：(1) 该 AP 编号在本校园网管系统中不存在（可能拼写有误，或压根不是本校设备）；(2) `-20 MHz` 是无效带宽参数。至于容量，只能给出\"若为 20 MHz / SNR 30 dB / 单流\"的参考值：香农理论上限 199.3 Mbps，但受 802.11ax MCS 与 MAC 开销限制，实际吞吐约 67 Mbps 量级。\n\n## Recommendation\n1. 请提供正确的 AP 编号（格式类似 `AP-LIB-3F-01`），或告诉我具体地点（如\"图书馆三楼\"\"宿舍5号楼512\"），我用地点帮你定位 AP 后再查 `get_ap_metrics` 和 `get_uplink_status`。\n2. 确认带宽是否为 **20 MHz**（正值）；若不是，例如 40/80 MHz，请一并告知空间流数（1~4）和同时活跃终端数，我重新算容量与人均带宽。\n3. 如果这台 AP 是自行加装/未纳管的设备，请把它接入统一管理平台后再诊断。\n\n诊断标签: INVALID_INPUT"
+}

@@ -1,0 +1,43 @@
+{
+  "case": {
+    "id": "C3",
+    "category": "调查：信号弱",
+    "goal": "只给出地点，检查能否先定位 AP，再根据 RSSI/SNR 判断为信号弱",
+    "input": "宿舍5号楼512房间晚上 Wi-Fi 经常卡，网页打开很慢，帮我看看是什么原因",
+    "expected_label": [
+      "SIGNAL_WEAK"
+    ],
+    "criteria": "RSSI -79 dBm、SNR 12 dB（<15 dB 差），重传率 28%；负载低、上联正常 → 信号弱/覆盖不足",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 12,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C3",
+    "category": "调查：信号弱",
+    "mode": "A_LLM",
+    "expected_label": "SIGNAL_WEAK",
+    "predicted_label": "SIGNAL_WEAK",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 17.81,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：宿舍5号楼512房间晚上 Wi-Fi 经常卡顿、网页打开慢。\n\nObservations：问题 AP 为 AP-DORM5-512（宿舍5号楼512房间，5GHz，信道149，80MHz，2空间流）。采集时间 2026-10-30 20:15，属于晚间时段。关键数据：RSSI -79 dBm，底噪 -91 dBm，活跃终端 4、连接终端 6，信道利用率 30%，重传率 28%，同信道邻居 AP 1 个。上联协商 1000 Mbps，rx 62 Mbps、tx 9 Mbps，到网关 RTT 1.8 ms，丢包 0.0%，CRC 错误 0。\n\nPossible Causes：\nH1：终端距离 AP 较远或隔墙导致信号弱、SNR 偏低，进而低阶 MCS、重传升高、网页变慢。\nH2：晚间宿舍区空口竞争/拥塞导致卡顿。\nH3：同频或环境干扰导致重传率高。\nH4：AP 有线上联瓶颈或链路质量问题。\n\nTool Results：未使用工具；数据来自提供的 JSON，并做如下计算：SNR = RSSI − 底噪 = -79 − (-91) = 12 dB。RSSI -79 dBm 属于“< -75 dBm 弱”；SNR 12 dB 属于“< 15 dB 差”；重传率 28% 属于“> 25% 严重”；信道利用率 30% 未超过 70%；活跃终端 4 个未超过 30；上联 rx 利用率约 62/1000 = 6.2%，tx 利用率约 9/1000 = 0.9%。\n\nAnalysis：\nH1 被支持：RSSI -79 dBm 偏弱，SNR 仅 12 dB，且重传率高达 28%，符合弱信号/低 SNR 下速率下降、重传增加的表现，能解释“网页打开慢”。\nH2 被削弱：活跃终端仅 4 个，连接终端 6 个，信道利用率 30%，均不支持明显空口拥塞。\nH3 被部分削弱：底噪 -91 dBm 不高，同信道邻居 AP 仅 1 个，信道利用率也不高；当前数据不支持强同频干扰，但重传率高主要可由弱信号解释。是否存在晚间动态干扰，快照数据不足以完全排除。\nH4 被削弱：上联协商 1000 Mbps，双向利用率很低，RTT 1.8 ms、丢包 0%、CRC 错误 0，未显示上联瓶颈或物理链路问题。\n\nConclusion：基于本次晚间快照，该房间 AP 下终端处于弱信号、低 SNR 状态，并伴随严重重传；空口拥塞和上联瓶颈证据不足。当前最可能的主因是无线信号覆盖/终端与 AP 之间链路质量差，但“经常”发生需要更多时段历史数据确认。\n\nRecommendation：优先现场检查 512 房间内终端实际 RSSI/SNR 和 AP 位置，确认是否隔墙、金属遮挡或终端离 AP 过远；尝试调整 AP/天线位置或靠近 AP 复测。若覆盖无法改善，考虑增加宿舍内 AP/信号点或优化 5GHz 覆盖。同步收集晚间多时段 RSSI、SNR、重传率趋势，再决定是否需要频谱分析或信道/带宽调整。\n\n诊断标签: SIGNAL_WEAK"
+}

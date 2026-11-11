@@ -1,0 +1,104 @@
+{
+  "case": {
+    "id": "C8",
+    "category": "信息不完整",
+    "goal": "AP 监控采集超时、关键数据缺失时，检查能否承认数据不足而不是编造结论",
+    "input": "体育馆一楼大厅的 Wi-Fi 能连上但上不了网，怎么回事？",
+    "expected_label": [
+      "INSUFFICIENT_DATA"
+    ],
+    "criteria": "AP-GYM-01 状态 unknown，SNMP 采集超时，无线与上联数据均缺失 → 无法确定原因，建议现场检查 AP 供电/上联/DHCP 等",
+    "numeric_checks": [],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 1,
+  "judge": {
+    "case": "C8",
+    "category": "信息不完整",
+    "mode": "B_Agent",
+    "expected_label": "INSUFFICIENT_DATA",
+    "predicted_label": "INSUFFICIENT_DATA",
+    "label_correct": 1,
+    "numeric_correct": "",
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → get_ap_metrics → get_uplink_status",
+    "n_tool_calls": 3,
+    "llm_rounds": 3,
+    "elapsed_s": 15.46,
+    "rep": 1
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"体育馆\"}",
+      "result": {
+        "keyword": "体育馆",
+        "match_count": 1,
+        "access_points": [
+          {
+            "ap_id": "AP-GYM-01",
+            "location": "体育馆一楼大厅",
+            "building": "体育馆",
+            "status": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_ap_metrics",
+      "arguments": "{\"ap_id\": \"AP-GYM-01\"}",
+      "result": {
+        "ap_id": "AP-GYM-01",
+        "location": "体育馆一楼大厅",
+        "status": "unknown",
+        "collected_at": "2026-10-30T20:15:00+08:00",
+        "metrics": {
+          "band": "5GHz",
+          "channel": null,
+          "bandwidth_mhz": null,
+          "spatial_streams": 2,
+          "rssi_dbm": null,
+          "noise_floor_dbm": null,
+          "connected_clients": null,
+          "active_clients": null,
+          "channel_utilization_pct": null,
+          "retry_rate_pct": null,
+          "same_channel_neighbor_aps": null,
+          "snr_db": null
+        },
+        "data_quality": "incomplete",
+        "status_detail": "最近 3 次 SNMP 采集超时，最后一次成功采集为 2026-10-29T09:00:00+08:00",
+        "missing_fields": [
+          "channel",
+          "bandwidth_mhz",
+          "rssi_dbm",
+          "noise_floor_dbm",
+          "connected_clients",
+          "active_clients",
+          "channel_utilization_pct",
+          "retry_rate_pct",
+          "same_channel_neighbor_aps",
+          "snr_db"
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_uplink_status",
+      "arguments": "{\"ap_id\": \"AP-GYM-01\"}",
+      "result": {
+        "ap_id": "AP-GYM-01",
+        "data_quality": "unavailable",
+        "note": "该 AP 没有可用的上联链路监控数据（可能采集失败）。"
+      }
+    }
+  ],
+  "answer": "## Incident\n体育馆一楼大厅的 Wi-Fi 能连上（关联成功），但无法访问外网，用户无法上网。\n\n## Observations\n- 目标 AP 已定位为 `AP-GYM-01`（体育馆一楼大厅），但平台端 `status` 字段为 **unknown**，不是正常/在线状态。\n- 无线侧指标：`data_quality = incomplete`，除 `spatial_streams = 2` 外，信道、带宽、RSSI、底噪、SNR、终端数、信道利用率、重传率、同信道邻居 AP 数**全部为 null**。\n- 采集异常说明：`status_detail` 记录“最近 3 次 SNMP 采集超时，最后一次成功采集为 2026-10-29T09:00:00+08:00”，即已有约 1 天多没有任何成功的无线侧数据。\n- 有线侧：`get_uplink_status` 返回 `data_quality = unavailable`，该 AP **没有可用的上联链路监控数据**（可能采集失败）。\n\n## Possible Causes\n- **H1：AP 有线上联/供电链路故障**（网线、水晶头、交换机端口、PoE 供电或端口 VLAN 配置异常）。终端可以在本地与 AP 完成 802.11 关联，但 AP 到网关的转发路径中断，表现为“连得上、上不了网”；同时 AP 自身失联（SNMP 超时、上联数据不可用）与该假设高度自洽。\n- **H2：AP 设备自身离线或死机/重启**，管理面失联，射频可能仍在发射但无法转发用户数据。\n- **H3：无线侧拥塞或干扰**（信道利用率过高、同频干扰）导致速率极低，被用户感知为“上不了网”。\n- **H4：上层网络或认证/网关问题**（DHCP、Portal/Radius、出口故障），AP 在线但用户拿不到地址或认证失败。\n\n## Tool Results\n| 项目 | 结果 |\n|---|---|\n| AP 定位 | `AP-GYM-01`，体育馆一楼大厅，status = unknown |\n| 无线指标 | `data_quality = incomplete`；channel / bandwidth / RSSI / noise_floor / SNR / clients / utilization / retry / neighbor_aps 均为 null；仅 `spatial_streams = 2` |\n| 采集记录 | 最近 3 次 SNMP 采集超时，最后一次成功采集 2026-10-29 09:00 |\n| 有线上联 | `data_quality = unavailable`，无可用上联监控数据 |\n| 容量计算 | **未执行**：`analyze_wireless_capacity` 需要 SNR 与带宽，二者均缺失，无法计算 |\n\n## Analysis\n- **H1（上联/供电故障）：被间接支持，但不能证实。** 支持点：AP 管理面连续 3 次采集超时 + 上联监控数据完全不可用，符合“链路断/端口 down/供电异常”的典型表现；而“能连上但上不了网”也与本地关联正常、出口路径中断一致。削弱点：工具没有返回上联协商速率、利用率、RTT、丢包、CRC 这些关键字段，无法确认物理链路状态，因此只能说“吻合”，不能说“证明”。\n- **H2（AP 自身离线/死机）：被间接支持。** `status = unknown` 且无线侧数据全部缺失，说明 AP 与管理平台已失去联系；但要区分“AP 死了”与“AP 活着但回传断了”，现有数据无法区分。\n- **H3（拥塞/干扰）：无法评估，倾向被削弱。** 完全没有信道利用率、重传率、SNR、终端数数据，无法做拥塞或干扰判断；同时若是单纯空口拥塞，通常不会伴随 AP 管理面 SNMP 全部超时，因此相对 H1/H2 解释力更弱。\n- **H4（上层网络/认证问题）：无法评估。** 缺少认证/DHCP/网关数据；但若上层网络问题而 AP 自身正常，通常仍能采到无线侧指标，本次指标全空，因此该假设不能作为主因。\n\n总体结论：**目前数据不足，无法确定根本原因**，但故障现象集中在“AP 与管理面/回传链路同时中断”这一类问题上，最需要优先验证的是物理链路与供电。\n\n## Conclusion\n不确定。可以确定的是：`AP-GYM-01` 已连续多次采集失败、当前状态未知，无线侧与上联侧监控数据都拿不到，因此无法用现有数据判断是空口问题还是链路问题。结合“能关联但无法上网 + AP 管理面失联”的现象，最可能是 AP 上联链路或供电/设备故障，但这只是高度吻合的假设，**尚未被数据证实**。\n\n## Recommendation\n1. **现场与交换机侧核查（最高优先级）**：到弱电间查看该 AP 所连交换机端口的 link 灯与 PoE 供电状态，确认端口是否 up、是否为 1000 Mbps 全双工、是否有 CRC/错包计数增长；重新插拔网线或更换跳线验证。\n2. **确认 AP 供电与启动状态**：看 AP 指示灯，必要时重启 AP，观察是否重新注册到管理平台。\n3. **恢复采集后再定量分析**：AP 恢复后重新执行 `get_ap_metrics` 与 `get_uplink_status`，拿到 SNR、信道利用率、重传率、上联利用率/丢包/RTT 后再用 `analyze_wireless_capacity` 定量评估人均带宽，才能排除空口拥塞与干扰。\n4. **并行验证上层**：在同一位置用有线终端或另一台正常 AP 测试 DHCP 获取地址与到网关的连通性，以区分问题在 AP 侧还是上层认证/出口侧。\n5. **核实平台时间口径**：确认 `collected_at`（2026-10-30 20:15）与最后成功采集时间（2026-10-29 09:00）之间的空档是否属于监控系统整体故障，避免误判。\n\n诊断标签: INSUFFICIENT_DATA"
+}

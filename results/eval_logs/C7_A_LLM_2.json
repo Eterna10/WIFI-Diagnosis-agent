@@ -1,0 +1,39 @@
+{
+  "case": {
+    "id": "C7",
+    "category": "网络侧正常",
+    "goal": "所有网络指标正常时，检查能否如实说网络侧正常，而不是硬找一个原因",
+    "input": "第一食堂一楼吃饭的时候刷视频总是卡，是不是食堂 Wi-Fi 有问题？",
+    "expected_label": [
+      "NORMAL",
+      "INSUFFICIENT_DATA"
+    ],
+    "criteria": "SNR 34 dB、活跃终端 6、利用率 28%、上联利用率 14%、RTT 1.5 ms → 网络侧正常，建议检查终端或视频服务侧",
+    "numeric_checks": [],
+    "required_tools": [
+      "get_ap_metrics",
+      "get_uplink_status"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C7",
+    "category": "网络侧正常",
+    "mode": "A_LLM",
+    "expected_label": "NORMAL/INSUFFICIENT_DATA",
+    "predicted_label": "NORMAL",
+    "label_correct": 1,
+    "numeric_correct": "",
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 24.81,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户在第一食堂一楼就餐时刷视频经常卡顿，怀疑食堂 Wi-Fi 有问题。\n\nObservations：  \n- 对应 AP：AP-CANTEEN1-01，状态 online，5GHz，信道 157，带宽 80 MHz，2 空间流。  \n- RSSI 中位数 -60 dBm，底噪 -94 dBm，按公式 SNR = RSSI − 底噪 = -60 − (-94) = 34 dB。  \n- 连接终端 20 个，活跃终端 6 个；信道利用率 28%；重传率 5%；同信道邻居 AP 1 个。  \n- 有线上联协商 1000 Mbps；rx 140 Mbps（约 14%），tx 22 Mbps（约 2.2%）；到网关 RTT 1.5 ms；丢包 0%；CRC 错误 0。  \n- 数据采集时间为 2026-10-30 20:15:00，不完全等同于用户实际就餐卡顿时段。\n\nPossible Causes：  \n- H1：食堂 AP 空口拥塞，活跃终端多或信道利用率高导致视频卡顿。  \n- H2：同频干扰、底噪偏高或重传严重导致空口效率下降。  \n- H3：AP 有线上联、交换端口、网关链路存在瓶颈或物理故障。  \n- H4：非该 AP 无线侧问题，例如终端自身、视频服务端/CDN、校园出口、认证/流控、DNS/漫游，或监控时刻与卡顿时刻不一致。\n\nTool Results：未使用工具；以上数值来自提供的 JSON 监控数据。关键计算：SNR = -60 − (-94) = 34 dB；rx 利用率 = 140 / 1000 = 14%；tx 利用率 = 22 / 1000 = 2.2%。  \n\nAnalysis：  \n- H1 被削弱：活跃终端 6 个，远低于“>30 才明显空口竞争”的经验阈值；信道利用率 28%，低于 70% 拥塞阈值。  \n- H2 被削弱：SNR 34 dB ≥ 25 dB，底噪 -94 dBm 低于 -85 dBm，同信道邻居 AP 仅 1 个，重传率 5% 低于 15%。  \n- H3 被削弱：上联为 1000 Mbps，收发利用率均低于 80%，RTT 1.5 ms 低于 20 ms，丢包 0%，CRC 错误 0。  \n- H4 无法由现有 AP 侧数据排除：该 AP 的无线与上联指标正常，但缺少用户终端侧、视频服务侧、校园出口和卡顿发生时段的同步数据。若卡顿发生在就餐高峰而数据采集在 20:15，也可能未覆盖真实问题时段。\n\nConclusion：基于当前监控快照，第一食堂 AP-CANTEEN1-01 的无线信号、空口负载、重传、干扰和有线回传均正常，不支持“食堂 Wi-Fi AP 本身有问题”作为主要原因。但刷视频卡顿的具体根因目前无法确定，仍需补充同时段和端到端数据。\n\nRecommendation：  \n1. 记录卡顿发生的具体时间、位置、终端型号、连接的 AP/BSSID、RSSI、IP，并确认是否只有视频 App 卡、普通网页和测速是否正常。  \n2. 在午餐/晚餐高峰重新采集该 AP 的活跃终端数、信道利用率、重传率、同信道邻居 AP 和上联流量。  \n3. 在终端侧测试 ping 网关、ping 公网、DNS 解析、traceroute 和测速；尝试关闭 VPN/代理、切换视频清晰度或更换终端对比。  \n4. 若多人同时卡顿，进一步检查校园出口带宽、认证/流控策略、DNS/CDN 和视频服务端质量；若仅单终端卡顿，优先排查终端与 App。  \n5. 暂不需要仅凭此快照调整该 AP 的射频或上联配置，除非高峰数据复现拥塞、干扰或上联异常。\n\n诊断标签: NORMAL"
+}

@@ -1,0 +1,39 @@
+{
+  "case": {
+    "id": "C7",
+    "category": "网络侧正常",
+    "goal": "所有网络指标正常时，检查能否如实说网络侧正常，而不是硬找一个原因",
+    "input": "第一食堂一楼吃饭的时候刷视频总是卡，是不是食堂 Wi-Fi 有问题？",
+    "expected_label": [
+      "NORMAL",
+      "INSUFFICIENT_DATA"
+    ],
+    "criteria": "SNR 34 dB、活跃终端 6、利用率 28%、上联利用率 14%、RTT 1.5 ms → 网络侧正常，建议检查终端或视频服务侧",
+    "numeric_checks": [],
+    "required_tools": [
+      "get_ap_metrics",
+      "get_uplink_status"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C7",
+    "category": "网络侧正常",
+    "mode": "A_LLM",
+    "expected_label": "NORMAL/INSUFFICIENT_DATA",
+    "predicted_label": "NORMAL",
+    "label_correct": 1,
+    "numeric_correct": "",
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 17.34,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户在第一食堂一楼就餐时刷视频卡顿，怀疑食堂 Wi-Fi 有问题。\n\nObservations：\n- 目标 AP：AP-CANTEEN1-01（第一食堂一楼就餐区），状态 online。\n- 频段/信道：5GHz，信道 157，带宽 80 MHz，空间流 2。\n- RSSI：-60 dBm；底噪：-94 dBm。\n- 连接终端 20 个，活跃终端 6 个。\n- 信道利用率：28%；重传率：5%；同信道邻居 AP：1 个。\n- 有线上联：协商 1000 Mbps，rx 140 Mbps，tx 22 Mbps，到网关 RTT 1.5 ms，丢包 0.0%，最近 1 小时 CRC 错误 0。\n- 采集时间：2026-10-30 20:15:00 +08:00。\n- 注意：这是 AP 级聚合快照，不包含用户终端实际连接的 AP/BSSID、单终端 RSSI、视频服务器、校园出口、DNS、认证及漫游信息。\n\nPossible Causes：\n- H1：食堂 AP 空口拥塞或接入终端过多，导致视频卡顿。\n- H2：无线信号弱、信噪比差或同频/环境干扰导致速率下降和重传。\n- H3：有线上联、交换机端口或到网关链路存在瓶颈/异常。\n- H4：问题不在该 AP 的无线侧，而可能在用户终端、视频源/CDN、校园互联网出口、DNS/认证、漫游或其他非本 AP 链路。\n\nTool Results：\n未使用工具。以下数值由提供的 JSON 直接读取或按公式计算：\n- SNR = RSSI − 底噪 = -60 − (-94) = 34 dB。\n- 有线上联接收方向利用率 = 140 / 1000 × 100% = 14%。\n- 有线上联发送方向利用率 = 22 / 1000 × 100% = 2.2%。\n- 活跃终端 6 个，未超过“单 AP 活跃终端 > 30”的经验阈值。\n- 信道利用率 28%，低于 70% 拥塞阈值。\n- 重传率 5%，低于 15% 偏高阈值。\n\nAnalysis：\n- H1 被证据削弱：AP-CANTEEN1-01 活跃终端仅 6 个，连接终端 20 个；信道利用率 28%，重传率 5%，均未达到拥塞或高重传判据。\n- H2 被证据削弱：RSSI -60 dBm 属良好范围；底噪 -94 dBm 不高；SNR 34 dB 良好；同信道邻居 AP 仅 1 个，未达到 2.4GHz 同频干扰明显判据，且该 AP 为 5GHz。\n- H3 被证据削弱：上联协商 1000 Mbps，单方向利用率最高约 14%，远低于 80% 瓶颈阈值；RTT 1.5 ms、丢包 0.0%、CRC 错误 0，未显示有线上联异常。\n- H4 目前不能排除：现有数据只说明 AP-CANTEEN1-01 的无线侧和上联指标正常，不能证明用户终端、视频服务器、校园出口或用户实际连接的其他 AP 没有问题。缺少用户终端侧和端到端数据，无法定位卡顿根本原因。\n\nConclusion：\n根据当前监控数据，第一食堂一楼 AP-CANTEEN1-01 的无线信号、信噪比、空口利用率、重传率、终端数量和有线上联指标均正常。现有证据不支持“食堂 Wi-Fi 本身存在明显故障或拥塞”的判断；但也不能据此确定视频卡顿的具体原因，仍需用户终端侧和端到端链路数据。\n\nRecommendation：\n1. 记录卡顿发生时间、位置、设备型号/MAC、视频应用，以及设备实际连接的 AP/BSSID 和频段。\n2. 在卡顿时于用户终端上测试：当前 RSSI、ping 网关、ping 公网地址、丢包率、DNS 解析和视频测速。\n3. 对比同位置其他用户/其他设备是否同时卡顿；若只有单设备异常，优先排查终端、视频 App 或账号/内容源。\n4. 网管侧补充采集该 AP 在就餐高峰时段的逐终端指标、漫游记录、信道利用率趋势，以及校园出口/防火墙/QoS 和视频 CDN 链路状态。\n5. 若用户实际连接到其他 AP 或 2.4GHz，请提供对应 AP 编号后重新分析。\n\n诊断标签: NORMAL"
+}

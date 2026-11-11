@@ -1,0 +1,47 @@
+{
+  "case": {
+    "id": "C1",
+    "category": "普通计算",
+    "goal": "检查香农容量、dB→线性换算、MCS 估计是否正确，且纯计算题不应去查询 AP",
+    "input": "我用 Wi-Fi 分析仪测得：信道带宽 40 MHz，SNR 为 20 dB，单空间流。理论信道容量是多少？大概能用什么调制方式、实际能跑多快？",
+    "expected_label": [
+      "CALC"
+    ],
+    "criteria": "香农容量 = 40×log2(1+100) ≈ 266.3 Mbps；SNR 20 dB 约对应 MCS4（16-QAM 3/4），PHY 103.2 Mbps，实际约 60~70 Mbps；需指出理论容量≠实际吞吐量",
+    "numeric_checks": [
+      {
+        "name": "香农容量(Mbps)",
+        "value": 266.3,
+        "tolerance_pct": 3
+      }
+    ],
+    "required_tools": [
+      "analyze_wireless_capacity"
+    ],
+    "forbidden_tools": [
+      "get_ap_metrics",
+      "get_uplink_status",
+      "list_access_points"
+    ]
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C1",
+    "category": "普通计算",
+    "mode": "A_LLM",
+    "expected_label": "CALC",
+    "predicted_label": "CALC",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 24.23,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户用 Wi-Fi 分析仪测得信道带宽 40 MHz、SNR 20 dB、单空间流，询问理论信道容量、大概可用的调制方式以及实际能跑多快。\n\nObservations：已知 B = 40 MHz，SNR = 20 dB，单空间流。未提供 Wi-Fi 代际（802.11n/ac/ax）、协商 MCS、GI、编码方式、PER、活跃终端数、信道利用率等数据。\n\nPossible Causes：  \nH1：按香农公式可直接计算该条件下的理论信道容量上限。  \nH2：调制方式由 SNR、设备实现和误码率共同决定，20 dB 不能唯一确定具体 MCS。  \nH3：实际吞吐受协议开销、MCS、GI、重传和空口共享影响，不能直接等同于香农容量。\n\nTool Results：未使用工具，数据来源为用户输入及香农公式计算。  \n- SNR_linear = 10^(20/10) = 100  \n- log2(1 + 100) = log2(101) ≈ 6.658  \n- C = 40 × 10^6 × 6.658 ≈ 266.3 Mbps  \n\n因此理论信道容量约为 **266 Mbps**，这是香农理论上限。\n\nAnalysis：  \n- H1 被支持：按香农公式计算，40 MHz、SNR 20 dB 的理论上限约为 266.3 Mbps。  \n- H2 部分支持但不确定：20 dB SNR 不属于低 SNR，通常可支持 16-QAM、64-QAM 等中高阶调制；256-QAM 在 20 dB 附近偏边缘，需要看具体设备实现和误码率，不能仅凭 SNR 精确判定 MCS。  \n- H3 被支持：香农容量不是 Wi-Fi 实际 PHY 速率，更不是应用层吞吐。Wi-Fi 还有前导、导频、编码、GI、重传、竞争等开销；参考判据中实际吞吐约为协商 PHY 速率的 60%~70%，且多终端共享空口。因此实际吞吐应低于 266 Mbps，但不能直接用 266 Mbps × 60%~70% 当作准确结果。\n\nConclusion：该条件下理论信道容量约 **266 Mbps**。调制方式大致可用中高阶 QAM，64-QAM 较可能，256-QAM 是否稳定取决于设备和误码率，不能精确到某个 MCS。实际应用层吞吐无法仅凭 40 MHz、SNR 20 dB、单空间流确定；在单终端无竞争的理想条件下也会低于 266 Mbps，精确值需查看协商 PHY 速率、MCS、GI 和 PER 后按 PHY 速率 × 60%~70% 估算。\n\nRecommendation：在终端或 AP 侧查看实际协商的 PHY 速率、MCS、GI、频段和 PER；用单终端 iperf 测试实际吞吐，同时记录信道利用率和重传率；若 MCS 被压到低阶或重传率偏高，再进一步排查干扰、信号和空口竞争。\n\n诊断标签: CALC"
+}

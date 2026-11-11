@@ -1,0 +1,55 @@
+﻿case,category,mode,expected_label,predicted_label,label_correct,numeric_correct,task_success,tool_correct,tools_called,n_tool_calls,llm_rounds,elapsed_s,rep
+C1,普通计算,A_LLM,CALC,CALC,1,1,1,,,0,1,33.01,1
+C1,普通计算,A_LLM,CALC,CALC,1,1,1,,,0,1,24.23,2
+C1,普通计算,A_LLM,CALC,CALC,1,1,1,,,0,1,49.05,3
+C1,普通计算,B_Agent,CALC,CALC,1,1,1,1,analyze_wireless_capacity,1,2,9.31,1
+C1,普通计算,B_Agent,CALC,CALC,1,1,1,1,analyze_wireless_capacity,1,2,9.32,2
+C1,普通计算,B_Agent,CALC,CALC,1,1,1,1,analyze_wireless_capacity,1,2,10.01,3
+C2,单位陷阱计算,A_LLM,CALC,CALC,1,1,1,,,0,1,7.64,1
+C2,单位陷阱计算,A_LLM,CALC,CALC,1,1,1,,,0,1,8.12,2
+C2,单位陷阱计算,A_LLM,CALC,CALC,1,1,1,,,0,1,8.33,3
+C2,单位陷阱计算,B_Agent,CALC,CALC,1,1,1,1,analyze_wireless_capacity,1,2,11.04,1
+C2,单位陷阱计算,B_Agent,CALC,CALC,1,1,1,1,analyze_wireless_capacity,1,2,9.44,2
+C2,单位陷阱计算,B_Agent,CALC,CALC,1,1,1,1,analyze_wireless_capacity,1,2,9.17,3
+C3,调查：信号弱,A_LLM,SIGNAL_WEAK,SIGNAL_WEAK,1,1,1,,,0,1,26.14,1
+C3,调查：信号弱,A_LLM,SIGNAL_WEAK,SIGNAL_WEAK,1,1,1,,,0,1,17.81,2
+C3,调查：信号弱,A_LLM,SIGNAL_WEAK,SIGNAL_WEAK,1,1,1,,,0,1,22.06,3
+C3,调查：信号弱,B_Agent,SIGNAL_WEAK,SIGNAL_WEAK,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,19.3,1
+C3,调查：信号弱,B_Agent,SIGNAL_WEAK,SIGNAL_WEAK,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,17.71,2
+C3,调查：信号弱,B_Agent,SIGNAL_WEAK,SIGNAL_WEAK,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity → analyze_wireless_capacity,5,4,20.95,3
+C4,易误判：信号好但拥塞,A_LLM,CONTENTION,CONTENTION,1,1,1,,,0,1,28.61,1
+C4,易误判：信号好但拥塞,A_LLM,CONTENTION,CONTENTION,1,1,1,,,0,1,27.69,2
+C4,易误判：信号好但拥塞,A_LLM,CONTENTION,CONTENTION,1,1,1,,,0,1,17.57,3
+C4,易误判：信号好但拥塞,B_Agent,CONTENTION,CONTENTION,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,21.42,1
+C4,易误判：信号好但拥塞,B_Agent,CONTENTION,CONTENTION,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,17.15,2
+C4,易误判：信号好但拥塞,B_Agent,CONTENTION,CONTENTION,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,17.29,3
+C5,易误判：无线正常但上联瓶颈,A_LLM,UPLINK,UPLINK,1,1,1,,,0,1,18.2,1
+C5,易误判：无线正常但上联瓶颈,A_LLM,UPLINK,UPLINK,1,1,1,,,0,1,14.81,2
+C5,易误判：无线正常但上联瓶颈,A_LLM,UPLINK,UPLINK,1,1,1,,,0,1,21.22,3
+C5,易误判：无线正常但上联瓶颈,B_Agent,UPLINK,UPLINK,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,17.81,1
+C5,易误判：无线正常但上联瓶颈,B_Agent,UPLINK,UPLINK,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,17.98,2
+C5,易误判：无线正常但上联瓶颈,B_Agent,UPLINK,UPLINK,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,19.27,3
+C6,易误判：终端少但干扰,A_LLM,INTERFERENCE,INTERFERENCE,1,1,1,,,0,1,15.53,1
+C6,易误判：终端少但干扰,A_LLM,INTERFERENCE,INTERFERENCE,1,1,1,,,0,1,16.53,2
+C6,易误判：终端少但干扰,A_LLM,INTERFERENCE,INTERFERENCE,1,1,1,,,0,1,23.68,3
+C6,易误判：终端少但干扰,B_Agent,INTERFERENCE,INTERFERENCE,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,20.88,1
+C6,易误判：终端少但干扰,B_Agent,INTERFERENCE,INTERFERENCE,1,1,1,1,list_access_points → get_ap_metrics → analyze_wireless_capacity → get_uplink_status,4,4,18.02,2
+C6,易误判：终端少但干扰,B_Agent,INTERFERENCE,INTERFERENCE,1,1,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,18.15,3
+C7,网络侧正常,A_LLM,NORMAL/INSUFFICIENT_DATA,NORMAL,1,,1,,,0,1,17.34,1
+C7,网络侧正常,A_LLM,NORMAL/INSUFFICIENT_DATA,NORMAL,1,,1,,,0,1,24.81,2
+C7,网络侧正常,A_LLM,NORMAL/INSUFFICIENT_DATA,NORMAL,1,,1,,,0,1,19.2,3
+C7,网络侧正常,B_Agent,NORMAL/INSUFFICIENT_DATA,NORMAL,1,,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,16.43,1
+C7,网络侧正常,B_Agent,NORMAL/INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,21.43,2
+C7,网络侧正常,B_Agent,NORMAL/INSUFFICIENT_DATA,NORMAL,1,,1,1,list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity,4,4,20.18,3
+C8,信息不完整,A_LLM,INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,,,0,1,16.08,1
+C8,信息不完整,A_LLM,INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,,,0,1,11.1,2
+C8,信息不完整,A_LLM,INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,,,0,1,13.2,3
+C8,信息不完整,B_Agent,INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,1,list_access_points → get_ap_metrics → get_uplink_status,3,3,15.46,1
+C8,信息不完整,B_Agent,INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,1,list_access_points → get_ap_metrics → get_uplink_status,3,3,17.5,2
+C8,信息不完整,B_Agent,INSUFFICIENT_DATA,INSUFFICIENT_DATA,1,,1,1,list_access_points → get_ap_metrics → get_uplink_status,3,3,14.89,3
+C9,异常输入,A_LLM,INVALID_INPUT,INVALID_INPUT,1,0,0,,,0,1,11.51,1
+C9,异常输入,A_LLM,INVALID_INPUT,INVALID_INPUT,1,0,0,,,0,1,12.7,2
+C9,异常输入,A_LLM,INVALID_INPUT,INVALID_INPUT,1,0,0,,,0,1,14.67,3
+C9,异常输入,B_Agent,INVALID_INPUT,INVALID_INPUT,1,0,0,1,list_access_points → get_ap_metrics → analyze_wireless_capacity,3,2,9.62,1
+C9,异常输入,B_Agent,INVALID_INPUT,INVALID_INPUT,1,0,0,1,list_access_points → analyze_wireless_capacity → list_access_points → analyze_wireless_capacity,4,3,12.3,2
+C9,异常输入,B_Agent,INVALID_INPUT,INVALID_INPUT,1,0,0,1,list_access_points → analyze_wireless_capacity → list_access_points → analyze_wireless_capacity,4,4,14.41,3

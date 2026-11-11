@@ -1,0 +1,102 @@
+[
+  {
+    "id": "C1",
+    "category": "普通计算",
+    "goal": "检查香农容量、dB→线性换算、MCS 估计是否正确，且纯计算题不应去查询 AP",
+    "input": "我用 Wi-Fi 分析仪测得：信道带宽 40 MHz，SNR 为 20 dB，单空间流。理论信道容量是多少？大概能用什么调制方式、实际能跑多快？",
+    "expected_label": ["CALC"],
+    "criteria": "香农容量 = 40×log2(1+100) ≈ 266.3 Mbps；SNR 20 dB 约对应 MCS4（16-QAM 3/4），PHY 103.2 Mbps，实际约 60~70 Mbps；需指出理论容量≠实际吞吐量",
+    "numeric_checks": [{"name": "香农容量(Mbps)", "value": 266.3, "tolerance_pct": 3}],
+    "required_tools": ["analyze_wireless_capacity"],
+    "forbidden_tools": ["get_ap_metrics", "get_uplink_status", "list_access_points"]
+  },
+  {
+    "id": "C2",
+    "category": "单位陷阱计算",
+    "goal": "用户给出的是 SNR 线性值而非 dB，检查能否正确换算后再用香农公式",
+    "input": "老师给的题目：信道带宽 20 MHz，信噪比 SNR = 30（注意是线性功率比，不是 dB）。用香农公式算理论容量是多少？",
+    "expected_label": ["CALC"],
+    "criteria": "C = 20×log2(1+30) ≈ 99.1 Mbps；SNR 线性 30 ≈ 14.77 dB。若把 30 当成 dB 会得到 ≈199.3 Mbps（错误）",
+    "numeric_checks": [{"name": "香农容量(Mbps)", "value": 99.1, "tolerance_pct": 3}],
+    "required_tools": ["analyze_wireless_capacity"],
+    "forbidden_tools": ["get_ap_metrics", "get_uplink_status", "list_access_points"]
+  },
+  {
+    "id": "C3",
+    "category": "调查：信号弱",
+    "goal": "只给出地点，检查能否先定位 AP，再根据 RSSI/SNR 判断为信号弱",
+    "input": "宿舍5号楼512房间晚上 Wi-Fi 经常卡，网页打开很慢，帮我看看是什么原因",
+    "expected_label": ["SIGNAL_WEAK"],
+    "criteria": "RSSI -79 dBm、SNR 12 dB（<15 dB 差），重传率 28%；负载低、上联正常 → 信号弱/覆盖不足",
+    "numeric_checks": [{"name": "SNR(dB)", "value": 12, "tolerance_pct": 0}],
+    "required_tools": ["get_ap_metrics"],
+    "forbidden_tools": []
+  },
+  {
+    "id": "C4",
+    "category": "易误判：信号好但拥塞",
+    "goal": "信号满格的表象下识别空口拥塞，不能因为信号好就判断正常",
+    "input": "图书馆三楼自习区手机 Wi-Fi 信号满格，但下载速度只有 1~2 Mbps，为什么？",
+    "expected_label": ["CONTENTION"],
+    "criteria": "SNR 37 dB 很好，但活跃终端 52、信道利用率 91% → 空口竞争；上联利用率仅约 38.5%，不是瓶颈",
+    "numeric_checks": [{"name": "SNR(dB)", "value": 37, "tolerance_pct": 0}],
+    "required_tools": ["get_ap_metrics"],
+    "forbidden_tools": []
+  },
+  {
+    "id": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "goal": "无线侧全部正常时，检查 Agent 是否会进一步检查有线上联",
+    "input": "第二教学楼201教室，手机信号很好，教室里人也不多，但上课时打开网页延迟很高，视频一直缓冲",
+    "expected_label": ["UPLINK"],
+    "criteria": "无线侧 SNR 41 dB、利用率 35% 正常；上联协商仅 100 Mbps、下行利用率 93%、RTT 38.5 ms、丢包 2.6%、CRC 错误 1520 → 上联瓶颈/物理链路问题",
+    "numeric_checks": [{"name": "上联利用率(%)", "value": 93, "tolerance_pct": 0}],
+    "required_tools": ["get_ap_metrics", "get_uplink_status"],
+    "forbidden_tools": []
+  },
+  {
+    "id": "C6",
+    "category": "易误判：终端少但干扰",
+    "goal": "SNR 尚可、终端很少，但信道利用率和重传高，检查能否识别同频干扰而不是拥塞",
+    "input": "实验楼105机房的电脑连 Wi-Fi，信号强度看着还可以，连的人也就几个，可速度很不稳定，时快时慢",
+    "expected_label": ["INTERFERENCE"],
+    "criteria": "2.4GHz 信道 6，同信道邻居 AP 7 个，底噪 -84 dBm（偏高），利用率 82%、重传 34%，但活跃终端只有 5 → 同频干扰",
+    "numeric_checks": [{"name": "SNR(dB)", "value": 26, "tolerance_pct": 0}],
+    "required_tools": ["get_ap_metrics"],
+    "forbidden_tools": []
+  },
+  {
+    "id": "C7",
+    "category": "网络侧正常",
+    "goal": "所有网络指标正常时，检查能否如实说网络侧正常，而不是硬找一个原因",
+    "input": "第一食堂一楼吃饭的时候刷视频总是卡，是不是食堂 Wi-Fi 有问题？",
+    "expected_label": ["NORMAL", "INSUFFICIENT_DATA"],
+    "criteria": "SNR 34 dB、活跃终端 6、利用率 28%、上联利用率 14%、RTT 1.5 ms → 网络侧正常，建议检查终端或视频服务侧",
+    "numeric_checks": [],
+    "required_tools": ["get_ap_metrics", "get_uplink_status"],
+    "forbidden_tools": []
+  },
+  {
+    "id": "C8",
+    "category": "信息不完整",
+    "goal": "AP 监控采集超时、关键数据缺失时，检查能否承认数据不足而不是编造结论",
+    "input": "体育馆一楼大厅的 Wi-Fi 能连上但上不了网，怎么回事？",
+    "expected_label": ["INSUFFICIENT_DATA"],
+    "criteria": "AP-GYM-01 状态 unknown，SNMP 采集超时，无线与上联数据均缺失 → 无法确定原因，建议现场检查 AP 供电/上联/DHCP 等",
+    "numeric_checks": [],
+    "required_tools": ["get_ap_metrics"],
+    "forbidden_tools": []
+  },
+  {
+    "id": "C9",
+    "category": "异常输入",
+    "goal": "不存在的 AP 编号和负数带宽，检查错误处理能力",
+    "input": "帮我查一下 AP-XYZ-999 这个接入点的情况，另外按带宽 -20 MHz、SNR 30 dB 算一下它的信道容量",
+    "expected_label": ["INVALID_INPUT"],
+    "criteria": "AP-XYZ-999 不存在；带宽不能为负 → 指出输入无效，请用户核对，不能输出任何容量数值或 AP 指标",
+    "numeric_checks": [],
+    "forbidden_numbers": [{"name": "擅自把 -20 改成 20 MHz 后算出的容量(Mbps)", "value": 199.3, "tolerance_pct": 1}],
+    "required_tools": [],
+    "forbidden_tools": []
+  }
+]

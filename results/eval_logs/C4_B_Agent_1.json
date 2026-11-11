@@ -1,0 +1,137 @@
+{
+  "case": {
+    "id": "C4",
+    "category": "易误判：信号好但拥塞",
+    "goal": "信号满格的表象下识别空口拥塞，不能因为信号好就判断正常",
+    "input": "图书馆三楼自习区手机 Wi-Fi 信号满格，但下载速度只有 1~2 Mbps，为什么？",
+    "expected_label": [
+      "CONTENTION"
+    ],
+    "criteria": "SNR 37 dB 很好，但活跃终端 52、信道利用率 91% → 空口竞争；上联利用率仅约 38.5%，不是瓶颈",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 37,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "B_Agent",
+  "rep": 1,
+  "judge": {
+    "case": "C4",
+    "category": "易误判：信号好但拥塞",
+    "mode": "B_Agent",
+    "expected_label": "CONTENTION",
+    "predicted_label": "CONTENTION",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "list_access_points → get_ap_metrics → get_uplink_status → analyze_wireless_capacity",
+    "n_tool_calls": 4,
+    "llm_rounds": 4,
+    "elapsed_s": 21.42,
+    "rep": 1
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "list_access_points",
+      "arguments": "{\"keyword\": \"图书馆\"}",
+      "result": {
+        "keyword": "图书馆",
+        "match_count": 1,
+        "access_points": [
+          {
+            "ap_id": "AP-LIB-3F-01",
+            "location": "图书馆三楼自习区",
+            "building": "图书馆",
+            "status": "online"
+          }
+        ]
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_ap_metrics",
+      "arguments": "{\"ap_id\": \"AP-LIB-3F-01\"}",
+      "result": {
+        "ap_id": "AP-LIB-3F-01",
+        "location": "图书馆三楼自习区",
+        "status": "online",
+        "collected_at": "2026-10-30T20:15:00+08:00",
+        "metrics": {
+          "band": "5GHz",
+          "channel": 36,
+          "bandwidth_mhz": 80,
+          "spatial_streams": 2,
+          "rssi_dbm": -55,
+          "noise_floor_dbm": -92,
+          "connected_clients": 68,
+          "active_clients": 52,
+          "channel_utilization_pct": 91,
+          "retry_rate_pct": 12,
+          "same_channel_neighbor_aps": 1,
+          "snr_db": 37
+        },
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 2,
+      "name": "get_uplink_status",
+      "arguments": "{\"ap_id\": \"AP-LIB-3F-01\"}",
+      "result": {
+        "ap_id": "AP-LIB-3F-01",
+        "switch": "SW-LIB-3F",
+        "port": "Gi1/0/12",
+        "negotiated_speed_mbps": 1000,
+        "rx_mbps": 385,
+        "tx_mbps": 41,
+        "utilization_rx_pct": 38.5,
+        "utilization_tx_pct": 4.1,
+        "peak_direction_utilization_pct": 38.5,
+        "rtt_to_gateway_ms": 2.1,
+        "packet_loss_pct": 0.0,
+        "crc_errors_last_hour": 0,
+        "data_quality": "complete"
+      }
+    },
+    {
+      "step": 3,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 80, \"snr_db\": 37, \"spatial_streams\": 2, \"active_clients\": 52, \"channel_utilization_pct\": 91}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 80.0,
+          "snr_db": 37.0,
+          "spatial_streams": 2
+        },
+        "snr_linear": 5011.87,
+        "shannon_capacity_per_stream_mbps": 983.3,
+        "shannon_capacity_total_mbps": 1966.6,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 10,
+          "modulation": "1024-QAM 3/4",
+          "min_snr_required_db": 35,
+          "phy_rate_mbps": 1080.8,
+          "max_phy_rate_at_mcs11_mbps": 1201.0,
+          "phy_rate_ratio_vs_best_pct": 90.0,
+          "estimated_max_throughput_mbps": 702.5,
+          "mac_efficiency_assumed": 0.65
+        },
+        "per_active_client_share_mbps": 13.5,
+        "sharing_note": "空口为 52 个活跃终端共享（理想公平分配的估计值）。",
+        "channel_idle_airtime_pct": 9.0
+      }
+    }
+  ],
+  "answer": "## Incident\n图书馆三楼自习区的用户报告：手机 Wi-Fi 显示信号满格（RSSI 强），但实际下载速度只有 1~2 Mbps，属于“信号好但网速慢”的典型症状。\n\n## Observations\n- 定位到唯一匹配的 AP：**AP-LIB-3F-01**（图书馆三楼自习区，在线）。\n- 无线侧（采集时间 2026-10-30 20:15）：5GHz，信道 36，80 MHz，2 空间流；RSSI -55 dBm，底噪 -92 dBm，SNR 37 dB；连接终端 68 台，**活跃终端 52 台**，**信道利用率 91%**，重传率 12%，同信道邻居 AP 仅 1 个。\n- 有线侧：上联 SW-LIB-3F 端口 Gi1/0/12，协商 **1000 Mbps**，rx 385 Mbps / tx 41 Mbps，峰值方向利用率 38.5%，到网关 RTT 2.1 ms，丢包 0%，CRC 错误 0。\n- data_quality 均为 complete，数据完整可用。\n\n## Possible Causes\n- **H1：空口容量被大量终端分摊、信道利用率达到瓶颈（拥塞）** —— 单个 AP 有 52 个活跃终端共享同一空口。\n- **H2：无线信号弱或 SNR 差导致低阶 MCS 与重传** —— 这是“信号满格却慢”的常见误判方向。\n- **H3：2.4/5GHz 同频干扰** —— 环境噪声或邻居 AP 同信道造成空口浪费。\n- **H4：有线上联链路瓶颈（百兆协商或链路跑满）** —— 无线正常但有线侧卡住。\n- **H5：个别终端占用大量空口或用户侧设备/应用限制** —— 无法用网管数据直接排除。\n\n## Tool Results\n- `list_access_points(\"图书馆\")` → AP-LIB-3F-01，图书馆三楼自习区，online。\n- `get_ap_metrics(\"AP-LIB-3F-01\")` → 见上 Observations（关键：active_clients=52，channel_utilization_pct=91，retry_rate_pct=12，same_channel_neighbor_aps=1，snr_db=37）。\n- `get_uplink_status(\"AP-LIB-3F-01\")` → 协商 1000 Mbps，peak_direction_utilization_pct=38.5，rtt 2.1 ms，loss 0%，CRC 0。\n- `analyze_wireless_capacity(80 MHz, SNR 37 dB, 2 streams, 52 active clients, 91% util)`：\n  - SNR 线性值 5011.87；香农容量 983.3 Mbps/流，合计 **1966.6 Mbps**（理论上限）。\n  - 估计 MCS 10 / 1024-QAM 3/4，PHY 速率 **1080.8 Mbps**（为最佳 MCS11 的 90%）。\n  - 扣 MAC 开销后估计最大吞吐 **702.5 Mbps**。\n  - **52 个活跃终端理想公平分摊：13.5 Mbps/终端**；信道空闲空口仅 **9%**。\n\n## Analysis\n- **H1（拥塞）被强支持**：活跃终端 52 台远超“单 AP > 30 台即明显竞争”的经验阈值；信道利用率 91% 已超过 70% 的拥塞判据，只剩 9% 空闲空口。80 MHz 空口理论最大约 702 Mbps，被 52 台终端分摊后理想公平份额仅 13.5 Mbps——而理想公平分配不发生，因为少数大流量终端会挤占后退（backoff）机会、重传进一步消耗空口，用户实测 1~2 Mbps 与“严重空口竞争 + 空口分配不均”完全吻合。重传率 12% 也提示碰撞增多（尚未到 25% 的严重档）。\n- **H2（信号/SNR）被削弱**：RSSI -55 dBm 属良好，底噪 -92 dBm 很低，SNR 37 dB 足以支撑 MCS 10（1024-QAM），PHY 速率达到最佳值的 90%。无线“链路质量”不是瓶颈，这解释了为什么用户看到“满格”。\n- **H3（同频干扰）被削弱**：同信道邻居 AP 仅 1 个（远低于 ≥3 的判据），底噪 -92 dBm 很干净，重传率 12% 未达 15% 偏高线。若为干扰主导，通常会同时看到“终端少但利用率高、重传高”，与本次终端数众多不符。\n- **H4（有线上联）被削弱**：上联协商 1000 Mbps 正常，峰值方向利用率 38.5% 未到 80% 瓶颈线，RTT 2.1 ms、丢包 0%、CRC 0，有线侧健康。\n- **H5 无法排除**：网管数据只能看到 AP 级聚合指标，看不到单终端行为（是否有人在跑 P2P/大文件、是否有低能力或单流终端拉低空口效率、用户终端自身限速/应用限速）。这一条需要客户端侧或流量明细才能验证。\n\n## Conclusion\n现有证据最能解释“信号满格但只有 1~2 Mbps”的原因是 **AP-LIB-3F-01 的空口拥塞**：52 个活跃终端共享一个信道利用率已达 91% 的 80 MHz 空口。信号强度、SNR、同频干扰、有线侧四项均被数据削弱，不是本次瓶颈。\n\n不确定性说明：① 13.5 Mbps 是“理想公平分配”的乐观估计，实际观测到 1~2 Mbps 说明空口分配高度不均，但本工具无法量化具体是哪个终端在抢占；② 用户终端自身的限速、应用限速、或个别终端异常占用空口（H5）在现有数据下无法确认。因此“空口拥塞是主因”可以确定为高度可能，但不是经单终端验证的最终定因。\n\n## Recommendation\n1. **短期缓解**：现场引导用户就近连接图书馆三楼其他 AP，或对 AP-LIB-3F-01 开启负载均衡/频段引导（band steering），把终端分摊到邻居 AP。\n2. **限制占用空口最多的终端**：在 AC/网管上查看该 AP 的终端流量排行（尤其是持续上行/下行大流量的终端），对 P2P、大文件下载类流量限速或 QoS 降级。\n3. **验证 H5**：用一台已知正常的终端在同一位置复测（同一 SSID、同一频段），若仍只有 1~2 Mbps，则确认是 AP 侧空口问题；若该终端速度正常，则问题在特定终端或应用。\n4. **中期容量规划**：图书馆自习区属高密度场景，建议评估加装 AP 提高密度、并考虑在该区域将 80 MHz 收窄为 40 MHz 以提升信道复用（当前同信道邻居仅 1 个，收窄风险低），配合 5GHz 优先策略减少 2.4GHz 竞争。\n5. **持续监控**：跟踪该 AP 的信道利用率、活跃终端数、重传率在自习高峰时段的趋势，作为扩容依据；现有重传率 12% 建议一并观察是否升至 15% 以上。\n\n诊断标签: CONTENTION"
+}

@@ -1,0 +1,37 @@
+{
+  "case": {
+    "id": "C8",
+    "category": "信息不完整",
+    "goal": "AP 监控采集超时、关键数据缺失时，检查能否承认数据不足而不是编造结论",
+    "input": "体育馆一楼大厅的 Wi-Fi 能连上但上不了网，怎么回事？",
+    "expected_label": [
+      "INSUFFICIENT_DATA"
+    ],
+    "criteria": "AP-GYM-01 状态 unknown，SNMP 采集超时，无线与上联数据均缺失 → 无法确定原因，建议现场检查 AP 供电/上联/DHCP 等",
+    "numeric_checks": [],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C8",
+    "category": "信息不完整",
+    "mode": "A_LLM",
+    "expected_label": "INSUFFICIENT_DATA",
+    "predicted_label": "INSUFFICIENT_DATA",
+    "label_correct": 1,
+    "numeric_correct": "",
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 16.08,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：体育馆一楼大厅的 Wi-Fi 能连接，但无法访问互联网。\n\nObservations：\n- 目标 AP 为 `AP-GYM-01`，位置“体育馆一楼大厅”。\n- 当前状态为 `unknown`，说明“最近 3 次 SNMP 采集超时”。\n- 最后一次成功采集时间为 `2026-10-29T09:00:00+08:00`。\n- 该 AP 的 RSSI、底噪、信道、带宽、终端数、信道利用率、重传率、邻居 AP、上联速率、RTT、丢包率、CRC 错误等当前监控字段均为 `null`。\n- 用户侧现象是“能连上但上不了网”，但未提供连接的具体 BSSID、IP 获取情况、DNS/网关可达性或其他用户是否同样受影响。\n\nPossible Causes：\n- H1：`AP-GYM-01` 的上联、供电、交换端口或回传链路异常，导致终端能关联但无法转发流量。\n- H2：AP 管理面或监控链路异常，例如 SNMP 超时；但管理面异常不一定等同于数据面故障，也可能是独立问题。\n- H3：DHCP、DNS、VLAN、网关或认证系统异常，导致终端已关联 Wi-Fi 但拿不到地址或无法访问外网。\n- H4：AP 整机或射频模块异常、重启、掉电，或用户实际连接到了同名 SSID 但由邻近 AP 承载。\n\nTool Results：\n未使用工具。数据来源为网管监控 JSON 和用户输入。关键数值：\n- `AP-GYM-01` 状态：`unknown`\n- 最近 SNMP 采集：最近 3 次超时\n- 最后成功采集：`2026-10-29T09:00:00+08:00`\n- 当前 RSSI、底噪、信道利用率、重传率、上联 RTT、丢包、CRC 等：均无有效数据\n\nAnalysis：\n- H1 被部分支持：`AP-GYM-01` 连续 SNMP 超时且上联字段为 `null`，说明该 AP 的监控/管理路径已经异常，可能伴随上联或供电问题；但目前没有该 AP 的上联速率、RTT、丢包、CRC 数据，无法确认是上联瓶颈或物理链路故障。\n- H2 被支持：连续 3 次 SNMP 超时直接支持“管理面或监控链路异常”这一假设；但它不能单独解释用户为什么能连上却上不了网，也不能证明数据转发一定故障。\n- H3 目前无法判断：没有体育馆 AP 的 DHCP、DNS、VLAN、网关 RTT/丢包或认证日志数据，不能支持也不能排除。\n- H4 被部分支持也被用户描述削弱：状态 `unknown` 和 SNMP 超时支持 AP 异常或离线假设；但“能连上”提示射频可能仍在工作，或用户连接的是同名 SSID 下其他 AP，因此不能仅凭该描述判定整机故障。\n\nConclusion：目前数据不足，无法确定体育馆一楼大厅“能连上但上不了网”的根本原因。最明确的异常是 `AP-GYM-01` 当前监控失联，所有实时无线和上联指标缺失；因此无法区分是 AP 上联/供电/端口问题、AP 自身异常，还是 DHCP/DNS/网关/认证等上层网络问题。\n\nRecommendation：\n1. 先确认用户连接的具体 BSSID 是否为 `AP-GYM-01`，并确认是否只有该用户受影响。\n2. 检查 `AP-GYM-01` 对应交换端口的 PoE/供电、端口 up/down、VLAN、协商速率、CRC 错误增长情况。\n3. 现场检查 AP 指示灯和供电，必要时重启 AP，并查看控制器/交换机日志。\n4. 测试该区域终端能否获取 IP、能否 ping 网关、DNS 是否正常，以区分无线关联问题与 DHCP/DNS/网关问题。\n5. 恢复 `AP-GYM-01` 的 SNMP 采集后，补充 RSSI、底噪、信道利用率、重传率、上联 RTT、丢包和 CRC 数据，再判断根本原因。\n\n诊断标签: INSUFFICIENT_DATA"
+}

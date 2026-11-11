@@ -1,0 +1,43 @@
+{
+  "case": {
+    "id": "C6",
+    "category": "易误判：终端少但干扰",
+    "goal": "SNR 尚可、终端很少，但信道利用率和重传高，检查能否识别同频干扰而不是拥塞",
+    "input": "实验楼105机房的电脑连 Wi-Fi，信号强度看着还可以，连的人也就几个，可速度很不稳定，时快时慢",
+    "expected_label": [
+      "INTERFERENCE"
+    ],
+    "criteria": "2.4GHz 信道 6，同信道邻居 AP 7 个，底噪 -84 dBm（偏高），利用率 82%、重传 34%，但活跃终端只有 5 → 同频干扰",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 26,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C6",
+    "category": "易误判：终端少但干扰",
+    "mode": "A_LLM",
+    "expected_label": "INTERFERENCE",
+    "predicted_label": "INTERFERENCE",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 16.53,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：实验楼105机房（AP-LAB1-105）用户反馈 Wi-Fi 信号看起来还可以、连接人数不多，但网速不稳定、时快时慢。\n\nObservations：AP-LAB1-105 为 2.4GHz、信道 6、20MHz、单空间流；RSSI 为 -58 dBm，底噪 -84 dBm；活跃终端 5 个、连接终端 9 个；信道利用率 82%，重传率 34%；同信道邻居 AP 数量为 7 个。有线上联协商 1000 Mbps，rx 18 Mbps、tx 4 Mbps，到网关 RTT 1.6 ms，丢包 0%，CRC 错误 0。\n\nPossible Causes：  \nH1：2.4GHz 同频干扰严重。信道 6 有 7 个同信道邻居 AP，可能造成空口竞争、退避和重传升高。  \nH2：非 Wi-Fi 噪声或环境干扰偏高，导致底噪升高、重传增加。  \nH3：终端侧或 AP 射频链路问题，例如部分终端低 MCS、老旧网卡、遮挡或 AP 射频异常，导致速率不稳定。  \nH4：有线上联瓶颈。该假设需要验证，但从现有数据看可能性较低。\n\nTool Results：未使用工具；以下数值来自用户提供的 JSON 数据并直接计算。  \n- SNR = RSSI − 底噪 = -58 − (-84) = 26 dB，按判据属于良好范围。  \n- RSSI -58 dBm ≥ -65 dBm，信号强度良好。  \n- 底噪 -84 dBm 高于 -85 dBm，环境噪声/干扰偏高。  \n- 信道利用率 82% > 70%，属于拥塞/高占用。  \n- 重传率 34% > 25%，属于严重偏高。  \n- 活跃终端 5 个 < 30，终端数量本身不构成明显空口竞争压力。  \n- 同信道邻居 AP 7 个 ≥ 3，符合同频干扰明显条件。  \n- 上联 rx 利用率 = 18 / 1000 = 1.8%，tx 利用率 = 4 / 1000 = 0.4%，远低于 80%。\n\nAnalysis：  \nH1 被证据强烈支持：2.4GHz 信道 6 有 7 个同信道邻居 AP，且该 AP 在活跃终端仅 5 个的情况下出现 82% 信道利用率和 34% 重传率，符合“终端少但信道利用率高、重传高”的同频干扰特征。  \nH2 被部分支持：底噪 -84 dBm 偏高，说明环境中可能存在非 Wi-Fi 噪声或其他干扰源；但现有数据不能区分同频 Wi-Fi 干扰与非 Wi-Fi 干扰的具体占比。  \nH3 不能被排除：高重传也可能与部分终端速率低、网卡老旧或遮挡有关，但当前缺少逐终端 RSSI、MCS、PHY 速率和重传明细，无法确认。  \nH4 被削弱：上联协商 1000 Mbps，双向利用率很低，RTT 1.6 ms、丢包 0%、CRC 错误 0，没有显示有线上联瓶颈或物理链路问题。\n\nConclusion：当前数据最支持“实验楼105机房 AP-LAB1-105 所在 2.4GHz 信道存在明显同频干扰/空口干扰，导致信道利用率高和重传严重，从而出现速度不稳定”。信号弱不是主要原因，有线上联瓶颈也缺乏证据。若要精确区分同频 Wi-Fi 干扰与非 Wi-Fi 噪声，仍需频谱扫描和逐终端无线指标。\n\nRecommendation：建议优先检查并优化 2.4GHz 信道规划，减少信道 6 的同信道邻居 AP；条件允许时启用 5GHz 覆盖或引导终端连接 5GHz。对该区域做频谱分析，确认是否存在非 Wi-Fi 干扰源。收集故障终端的逐终端 RSSI、MCS/PHY 速率、重传和信道占用数据，判断是否需调整 AP 发射功率、信道或更换终端网卡。暂不需要优先排查上联网线或交换机端口。\n\n诊断标签: INTERFERENCE"
+}

@@ -1,0 +1,75 @@
+{
+  "case": {
+    "id": "C2",
+    "category": "单位陷阱计算",
+    "goal": "用户给出的是 SNR 线性值而非 dB，检查能否正确换算后再用香农公式",
+    "input": "老师给的题目：信道带宽 20 MHz，信噪比 SNR = 30（注意是线性功率比，不是 dB）。用香农公式算理论容量是多少？",
+    "expected_label": [
+      "CALC"
+    ],
+    "criteria": "C = 20×log2(1+30) ≈ 99.1 Mbps；SNR 线性 30 ≈ 14.77 dB。若把 30 当成 dB 会得到 ≈199.3 Mbps（错误）",
+    "numeric_checks": [
+      {
+        "name": "香农容量(Mbps)",
+        "value": 99.1,
+        "tolerance_pct": 3
+      }
+    ],
+    "required_tools": [
+      "analyze_wireless_capacity"
+    ],
+    "forbidden_tools": [
+      "get_ap_metrics",
+      "get_uplink_status",
+      "list_access_points"
+    ]
+  },
+  "mode": "B_Agent",
+  "rep": 2,
+  "judge": {
+    "case": "C2",
+    "category": "单位陷阱计算",
+    "mode": "B_Agent",
+    "expected_label": "CALC",
+    "predicted_label": "CALC",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": 1,
+    "tools_called": "analyze_wireless_capacity",
+    "n_tool_calls": 1,
+    "llm_rounds": 2,
+    "elapsed_s": 9.44,
+    "rep": 2
+  },
+  "tool_calls": [
+    {
+      "step": 1,
+      "name": "analyze_wireless_capacity",
+      "arguments": "{\"bandwidth_mhz\": 20, \"snr_db\": 14.771, \"spatial_streams\": 1}",
+      "result": {
+        "input": {
+          "bandwidth_mhz": 20.0,
+          "snr_db": 14.771,
+          "spatial_streams": 1
+        },
+        "snr_linear": 30.0,
+        "shannon_capacity_per_stream_mbps": 99.1,
+        "shannon_capacity_total_mbps": 99.1,
+        "note": "香农容量是理论上限，不等于实际吞吐量。",
+        "mcs_estimate": {
+          "standard": "802.11ax (Wi-Fi 6), 0.8µs GI",
+          "mcs": 3,
+          "modulation": "16-QAM 1/2",
+          "min_snr_required_db": 14,
+          "phy_rate_mbps": 34.4,
+          "max_phy_rate_at_mcs11_mbps": 143.4,
+          "phy_rate_ratio_vs_best_pct": 24.0,
+          "estimated_max_throughput_mbps": 22.4,
+          "mac_efficiency_assumed": 0.65
+        }
+      }
+    }
+  ],
+  "answer": "Incident：用户提出一道纯计算题：在 20 MHz 信道带宽、SNR = 30（线性功率比，不是 dB）的条件下，求香农理论容量。\n\nObservations：\n- 信道带宽 B = 20 MHz（用户给定）\n- SNR 以**线性功率比**给出 = 30（即 30:1，约 14.77 dB），这里需要先换算，不能把 30 当作 30 dB 直接代入。\n- 用户没有提供空间流数、终端数等信息；计算理论容量时不需要这些信息。\n\nPossible Causes（这里是计算题，列出两个容易出错的假设点）：\n- H1：直接把 30 当作 30 dB 代入，会得到约 20 × log₂(1+1000) ≈ 199.3 Mbps，这是错误结果，属于典型的单位混淆。\n- H2：正确做法是先换算 SNR_dB = 10·log₁₀(30) ≈ 14.77 dB，再代入香农公式，得到约 99.1 Mbps。\n\nTool Results（调用 analyze_wireless_capacity，bandwidth = 20 MHz，snr_db = 14.771，1 空间流）：\n- 工具反算线性 SNR：30.0（确认换算正确）\n- 香农理论容量：99.1 Mbps（单流、总容量相同）\n- 参考：按 802.11ax 估计，该 SNR 对应 MCS 3（16-QAM 1/2，最低需要 14 dB），PHY 速率 34.4 Mbps；扣除约 65% 的 MAC 效率后，实际可达吞吐量约 22.4 Mbps；该 PHY 速率仅相当于该带宽下最高速率（143.4 Mbps）的 24%。\n\nAnalysis：\n- H1（误把 30 当 30 dB）被数据削弱：工具确认线性 30 对应 14.77 dB，因此容量是 99.1 Mbps，而不是 ~199 Mbps。\n- H2（先换算再计算）被数据支持：20 × log₂(31) ≈ 99.1 Mbps，与工具输出一致。\n- 另外要注意，香农容量（99.1 Mbps）是**理论上限**，实际系统受 MCS 选择、MAC 开销、竞争等限制；同一 SNR 下 802.11ax 实际吞吐量估算只有约 22.4 Mbps，两者相差很大，这正说明“香农容量 ≠ 实际网速”。\n\nConclusion：在 B = 20 MHz、线性 SNR = 30（≈14.77 dB）的条件下，香农理论容量约为 **99.1 Mbps**（≈ 20 Mbps × log₂31）。这是理论上限，不能当作实际可获得的用户速率。\n\nRecommendation：\n1. 答题时按“先换算 dB，再代入香农公式”写清步骤，并注明 3 dB 约为 2 倍功率比，以避免单位混淆。\n2. 如果题目后续要求实际吞吐量，应补充说明：香农容量需按 MCS/MAC 效率折算，例如按工具估算，约 22.4 Mbps。\n3. 如果换成实际 AP 场景（如多终端共享），需要再调用 get_ap_metrics / analyze_wireless_capacity 并传入 active_clients，才能得到人均带宽。\n\n诊断标签: CALC"
+}

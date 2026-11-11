@@ -1,0 +1,43 @@
+{
+  "case": {
+    "id": "C3",
+    "category": "调查：信号弱",
+    "goal": "只给出地点，检查能否先定位 AP，再根据 RSSI/SNR 判断为信号弱",
+    "input": "宿舍5号楼512房间晚上 Wi-Fi 经常卡，网页打开很慢，帮我看看是什么原因",
+    "expected_label": [
+      "SIGNAL_WEAK"
+    ],
+    "criteria": "RSSI -79 dBm、SNR 12 dB（<15 dB 差），重传率 28%；负载低、上联正常 → 信号弱/覆盖不足",
+    "numeric_checks": [
+      {
+        "name": "SNR(dB)",
+        "value": 12,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C3",
+    "category": "调查：信号弱",
+    "mode": "A_LLM",
+    "expected_label": "SIGNAL_WEAK",
+    "predicted_label": "SIGNAL_WEAK",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 26.14,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：宿舍5号楼512房间晚上 Wi-Fi 经常卡、网页打开慢。\n\nObservations：\n- 关联 AP：AP-DORM5-512，状态 online，5GHz，信道 149，带宽 80 MHz，2 空间流。\n- 终端上报 RSSI 中位数：-79 dBm；AP 侧底噪：-91 dBm。\n- 活跃终端 4 个，连接终端 6 个；信道利用率 30%；重传率 28%。\n- 同信道邻居 AP：1 个。\n- 有线上联：协商 1000 Mbps，rx 62 Mbps，tx 9 Mbps；到网关 RTT 1.8 ms，丢包 0.0%，CRC 错误 0。\n- 采集时间：2026-10-30 20:15，属于晚间时段，但与“经常卡”相比只有单次快照。\n\nPossible Causes：\n- H1：终端到 AP 的无线链路偏弱，SNR 差，导致低阶 MCS、重传升高和网页变慢。\n- H2：无线干扰或终端侧无线问题导致重传偏高。\n- H3：空口拥塞，活跃终端多或信道利用率高导致人均带宽下降。\n- H4：有线上联或网关链路瓶颈导致延迟、丢包。\n\nTool Results：\n未使用工具；以下数值来自用户提供的 JSON 数据读取或直接计算。\n- SNR = RSSI − 底噪 = -79 − (-91) = 12 dB。\n- 上联 rx 利用率 = 62 / 1000 = 6.2%；tx 利用率 = 9 / 1000 = 0.9%。\n- 其他关键值：重传率 28%，信道利用率 30%，活跃终端 4，RTT 1.8 ms，丢包 0.0%，CRC 0。\n\nAnalysis：\n- H1 被支持：RSSI -79 dBm 低于 -75 dBm，属于弱信号；SNR 12 dB 低于 15 dB，属于差；重传率 28% 高于 25%，属于严重偏高。这些会直接造成速率下降、延迟升高和网页加载慢。\n- H2 证据不足：重传率高与干扰可能一致，但当前底噪 -91 dBm 不高，同信道邻居仅 1 个，没有明显同频干扰证据。仍不能排除室内结构、终端位置或非 Wi-Fi 干扰，需要现场或连续测量。\n- H3 被削弱：活跃终端仅 4 个，远低于 30；信道利用率 30%，低于 70% 拥塞判据，暂不支持“人多拥塞”为主要原因。\n- H4 被削弱：上联协商 1000 Mbps，双向利用率都很低；RTT 1.8 ms、丢包 0.0%、CRC 0，均不支持有线上联瓶颈。\n- 总体看，数据更指向 AP-DORM5-512 的无线覆盖/信号质量问题，但只有单次 AP 侧汇总数据，无法确定具体是距离、隔墙、AP 位置、终端天线还是其他因素。\n\nConclusion：当前数据支持“宿舍5号楼512房间 Wi-Fi 慢主要与无线信号弱、SNR 差及高重传有关”，不支持空口拥塞和有线上联瓶颈。具体根因仍需现场测试和连续采集确认；目前不能完全确定。\n\nRecommendation：\n1. 在宿舍内用同一终端记录不同位置的上网测试结果，重点比较 RSSI、延迟和网页打开速度。\n2. 换手机/电脑交叉测试，判断是单个终端问题还是房间无线覆盖问题。\n3. 检查 AP-DORM5-512 到房间的覆盖路径、天线方向和遮挡情况，必要时调整 AP 位置或增强该房间覆盖。\n4. 晚上高峰时段连续采集 RSSI、SNR、重传率、信道利用率及每终端指标，确认是否与用户感受一致。\n5. 若多终端均表现差，按无线覆盖弱/高重传问题报修；若仅单终端差，排查终端网卡、驱动和无线设置。\n\n诊断标签: SIGNAL_WEAK"
+}

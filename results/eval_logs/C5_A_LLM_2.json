@@ -1,0 +1,44 @@
+{
+  "case": {
+    "id": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "goal": "无线侧全部正常时，检查 Agent 是否会进一步检查有线上联",
+    "input": "第二教学楼201教室，手机信号很好，教室里人也不多，但上课时打开网页延迟很高，视频一直缓冲",
+    "expected_label": [
+      "UPLINK"
+    ],
+    "criteria": "无线侧 SNR 41 dB、利用率 35% 正常；上联协商仅 100 Mbps、下行利用率 93%、RTT 38.5 ms、丢包 2.6%、CRC 错误 1520 → 上联瓶颈/物理链路问题",
+    "numeric_checks": [
+      {
+        "name": "上联利用率(%)",
+        "value": 93,
+        "tolerance_pct": 0
+      }
+    ],
+    "required_tools": [
+      "get_ap_metrics",
+      "get_uplink_status"
+    ],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C5",
+    "category": "易误判：无线正常但上联瓶颈",
+    "mode": "A_LLM",
+    "expected_label": "UPLINK",
+    "predicted_label": "UPLINK",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 14.81,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：第二教学楼201教室上课时手机显示信号很好、教室人不多，但网页延迟高、视频持续缓冲。\n\nObservations：  \n- 目标 AP：AP-TEACH2-201（第二教学楼201教室），状态 online。  \n- 无线侧：5GHz，RSSI -52 dBm，底噪 -93 dBm；活跃终端 8，连接终端 25；信道利用率 35%；重传率 6%；同信道邻居 AP 0。  \n- 有线上联：端口 Fa0/7，协商速率 100 Mbps，rx 93 Mbps，tx 11 Mbps；到网关 RTT 38.5 ms；丢包率 2.6%；最近 1 小时 CRC 错误 1520。\n\nPossible Causes：  \n- H1：AP 有线上联链路降速/接近饱和，并伴随物理层或端口错误。  \n- H2：无线空口拥塞或同频干扰导致延迟和缓冲。  \n- H3：上游交换/网关或校园出口异常导致 RTT 和丢包升高。  \n\nTool Results：未使用工具；以下数值来自用户提供的 JSON 数据并手工计算。  \n- SNR = RSSI − 底噪 = -52 − (-93) = 41 dB。  \n- 100 Mbps 上联下 rx 利用率 = 93 / 100 = 93%。  \n- RTT 38.5 ms，高于“校园内到网关 > 20 ms 属异常”的参考阈值。  \n- 丢包率 2.6%，高于“> 1% 属异常”的参考阈值。  \n- CRC 错误最近 1 小时为 1520，非零且较高。\n\nAnalysis：  \n- H1 被证据支持：AP 上联只协商到 100 Mbps，而正常应为 1000 Mbps；rx 方向利用率达到 93%，已超过 80% 的单方向瓶颈参考阈值；同时 RTT 38.5 ms、丢包 2.6%、CRC 错误 1520，均指向有线上联或物理链路问题。  \n- H2 被证据削弱：RSSI -52 dBm 良好，SNR 41 dB 良好；活跃终端仅 8 个，未超过 30；信道利用率 35%，未超过 70%；重传率 6%，未超过 15%；同信道邻居 AP 为 0。无线空口拥塞和同频干扰证据不足。  \n- H3 只能部分解释：RTT 和丢包异常可能涉及上游，但当前最突出的局部异常是 AP 端口仅 100 Mbps、rx 利用率 93% 和 CRC 错误，因此更应先排查 AP 到交换机这一段，而不能只归因于校园出口。  \n\nConclusion：当前最可能的问题是 AP-TEACH2-201 的有线上联链路存在降速、接近饱和或物理层错误，而不是手机信号弱或无线空口拥塞。仅凭一次快照还不能确定具体是网线、水晶头、交换机端口还是链路协商配置，但应优先按有线上联故障处理。\n\nRecommendation：建议网络管理员检查 SW-TEACH2-2F 的 Fa0/7 端口和 AP 上联线缆；查看交换机端口速率/双工协商、CRC/错包计数和日志；更换网线或水晶头并尝试重新协商到 1000 Mbps；在 AP 侧和网关间做 ping/iperf 测试复测 RTT、丢包和吞吐；修复后持续观察信道利用率不是重点，重点观察上联速率、rx 利用率、CRC、RTT 和丢包是否恢复。\n\n诊断标签: UPLINK"
+}

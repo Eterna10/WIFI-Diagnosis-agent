@@ -1,0 +1,47 @@
+{
+  "case": {
+    "id": "C1",
+    "category": "普通计算",
+    "goal": "检查香农容量、dB→线性换算、MCS 估计是否正确，且纯计算题不应去查询 AP",
+    "input": "我用 Wi-Fi 分析仪测得：信道带宽 40 MHz，SNR 为 20 dB，单空间流。理论信道容量是多少？大概能用什么调制方式、实际能跑多快？",
+    "expected_label": [
+      "CALC"
+    ],
+    "criteria": "香农容量 = 40×log2(1+100) ≈ 266.3 Mbps；SNR 20 dB 约对应 MCS4（16-QAM 3/4），PHY 103.2 Mbps，实际约 60~70 Mbps；需指出理论容量≠实际吞吐量",
+    "numeric_checks": [
+      {
+        "name": "香农容量(Mbps)",
+        "value": 266.3,
+        "tolerance_pct": 3
+      }
+    ],
+    "required_tools": [
+      "analyze_wireless_capacity"
+    ],
+    "forbidden_tools": [
+      "get_ap_metrics",
+      "get_uplink_status",
+      "list_access_points"
+    ]
+  },
+  "mode": "A_LLM",
+  "rep": 1,
+  "judge": {
+    "case": "C1",
+    "category": "普通计算",
+    "mode": "A_LLM",
+    "expected_label": "CALC",
+    "predicted_label": "CALC",
+    "label_correct": 1,
+    "numeric_correct": 1,
+    "task_success": 1,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 33.01,
+    "rep": 1
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户询问在 40 MHz 信道带宽、SNR 20 dB、单空间流条件下，理论信道容量、可能采用的调制方式以及实际可达速率。\n\nObservations：\n- 用户输入：带宽 B = 40 MHz，SNR = 20 dB，单空间流。\n- 未提供：具体 Wi-Fi 标准（802.11n/ac/ax）、MCS、保护间隔 GI、实测 PHY 速率、实测吞吐、重传率、信道利用率、AP 负载等。\n- 按参考判据，SNR 20 dB 属于 15～25 dB 的“一般”区间，不是差，但也不足以支持最高阶调制。\n\nPossible Causes：\n- H1：理论容量由香农公式决定，266 Mbps 左右是上限；实际 Wi-Fi 因编码、协议开销、重传等会明显低于该上限。\n- H2：20 dB SNR 通常只能稳定支持中等阶调制，例如 64-QAM 2/3 或 3/4 附近；若实测速率远低于此，可能存在干扰、重传、AP 负载或终端能力限制。\n- H3：若期望接近最高阶 MCS 或接近香农上限，则当前 SNR 不够，需要更高 SNR 和更好信道条件。\n\nTool Results：\n未使用工具。数据来源：用户输入的 40 MHz、SNR 20 dB、单空间流，以及参考判据中的香农公式。\n计算：\n- SNR_linear = 10^(20/10) = 100\n- C = B × log2(1 + SNR_linear)\n- C = 40 × 10^6 × log2(101) ≈ 40 × 10^6 × 6.658 ≈ 266.3 Mbps\n\nAnalysis：\n- H1 被支持：香农公式给出的约 266.3 Mbps 是单空间流、40 MHz、SNR 20 dB 下的理论上限，不是 Wi-Fi 实际吞吐。\n- H2 被部分支持：SNR 20 dB 属于“一般”，常见设备大概会使用 64-QAM 2/3 或 3/4 一类中等阶调制；具体 MCS 取决于标准、芯片和信道实现。实际吞吐还需按 PHY 速率 × 60%～70% 估算，并受空口竞争影响。\n- H3 被支持：266.3 Mbps 是理论上限，实际 Wi-Fi 不会直接跑满；若没有具体 MCS/PHY 速率，无法唯一计算实际吞吐。\n- 举例说明：若设备在 40 MHz 单流下协商到 64-QAM 2/3 附近，PHY 速率可能在约 108 Mbps 量级，则实际吞吐约 65～76 Mbps；若只稳定在 16-QAM 3/4，则会更低。该示例依赖具体标准与设备实现，不能由现有三项参数唯一确定。\n\nConclusion：\n理论信道容量约为 266.3 Mbps，这是香农上限。SNR 20 dB 属于一般水平，大概可使用 64-QAM 2/3 或 3/4 附近的中等阶调制，不应期待最高阶调制。实际吞吐无法仅凭 40 MHz、SNR 20 dB、单空间流唯一确定；需要知道具体标准、MCS、GI 和实测 PHY 速率。按参考判据，实际吞吐约为 PHY 速率 × 60%～70%。\n\nRecommendation：\n查看终端与 AP 协商的 Wi-Fi 标准、频宽、空间流、MCS、GI 和 PHY 速率；同时记录重传率、信道利用率和 AP 活跃终端数。用 iperf 或校园测速做实测吞吐对比。若实测远低于按 MCS 估算的 60%～70%，再排查干扰、拥塞、终端能力或有线上联问题。若需精确计算实际速率，请补充具体标准（如 802.11ac/ax）、MCS 和 GI。\n\n诊断标签: CALC"
+}

@@ -1,0 +1,42 @@
+{
+  "case": {
+    "id": "C9",
+    "category": "异常输入",
+    "goal": "不存在的 AP 编号和负数带宽，检查错误处理能力",
+    "input": "帮我查一下 AP-XYZ-999 这个接入点的情况，另外按带宽 -20 MHz、SNR 30 dB 算一下它的信道容量",
+    "expected_label": [
+      "INVALID_INPUT"
+    ],
+    "criteria": "AP-XYZ-999 不存在；带宽不能为负 → 指出输入无效，请用户核对，不能输出任何容量数值或 AP 指标",
+    "numeric_checks": [],
+    "forbidden_numbers": [
+      {
+        "name": "擅自把 -20 改成 20 MHz 后算出的容量(Mbps)",
+        "value": 199.3,
+        "tolerance_pct": 1
+      }
+    ],
+    "required_tools": [],
+    "forbidden_tools": []
+  },
+  "mode": "A_LLM",
+  "rep": 2,
+  "judge": {
+    "case": "C9",
+    "category": "异常输入",
+    "mode": "A_LLM",
+    "expected_label": "INVALID_INPUT",
+    "predicted_label": "INVALID_INPUT",
+    "label_correct": 1,
+    "numeric_correct": 0,
+    "task_success": 0,
+    "tool_correct": "",
+    "tools_called": "",
+    "n_tool_calls": 0,
+    "llm_rounds": 1,
+    "elapsed_s": 12.7,
+    "rep": 2
+  },
+  "tool_calls": [],
+  "answer": "Incident：用户希望查询接入点 `AP-XYZ-999` 的监控情况，并按“带宽 -20 MHz、SNR 30 dB”计算信道容量。\n\nObservations：  \n- 提供的 JSON 监控数据中不存在 `AP-XYZ-999`，现有 AP 为 `AP-LIB-3F-01`、`AP-DORM5-512`、`AP-TEACH2-201`、`AP-LAB1-105`、`AP-CANTEEN1-01`、`AP-GYM-01`。  \n- 因此无法获得 `AP-XYZ-999` 的 RSSI、底噪、信道利用率、重传率、终端数、上联状态等数据。  \n- 用户给出的带宽为 `-20 MHz`，负带宽在物理上没有意义，不能作为有效信道带宽用于容量计算。  \n- SNR 为 `30 dB`，该参数本身可计算：`SNR_linear = 10^(30/10) = 1000`。\n\nPossible Causes：  \n- H1：AP 编号输入错误或该 AP 不存在，导致无法在监控数据中检索到。  \n- H2：该 AP 未被纳入当前监控系统、尚未上线或数据未上报，导致数据缺失。  \n- H3：带宽参数符号或单位输入有误，例如本意为 `20 MHz`，或本意是“从原带宽减去 20 MHz”。  \n\nTool Results：未使用工具。数据来源为提供的 JSON 和用户输入。  \n- 在给定 JSON 中检索不到 `AP-XYZ-999`。  \n- `SNR_linear = 10^(30/10) = 1000`。  \n- `log2(1 + 1000) = log2(1001) ≈ 9.967`。  \n- 若机械代入 `B = -20 MHz`，则 `C = -20 × 9.967 ≈ -199.34 Mbps`，但负带宽和负容量均无物理意义。  \n- 若带宽实际应为 `20 MHz`，则示例计算为 `C = 20 × 9.967 ≈ 199.34 Mbps`，但这只是纠正符号后的数学结果。\n\nAnalysis：  \n- H1 被证据支持：监控数据中完全没有 `AP-XYZ-999`，无法查询其状态。  \n- H2 不能确认：数据中未说明该 AP 是否新装、未纳管或离线；目前只能说明“提供的数据中没有它”。  \n- H3 被证据支持：`-20 MHz` 不是有效带宽，无法据此给出有意义的香农容量。  \n- 对该 AP 的实际网络问题无法分析：缺少该 AP 的任何监控指标，不能判断是信号弱、干扰、拥塞、上联瓶颈还是正常。\n\nConclusion：无法查询 `AP-XYZ-999` 的监控情况，因为该 AP 不在提供的数据中；同时 `-20 MHz` 是无效带宽，不能计算出有物理意义的信道容量。当前属于输入无效/数据不足，不能确定该 AP 的真实状态或原因。\n\nRecommendation：  \n1. 核对 AP 标签，确认 `AP-XYZ-999` 是否写错，或提供该 AP 所在楼栋/房间以匹配正确编号。  \n2. 确认带宽参数：负带宽是否为笔误；如需计算，请给出正的带宽值，例如 `20 MHz`。  \n3. 若该 AP 确实存在，请检查其是否已纳管、是否在线、SNMP 是否可达，并补充该 AP 的监控数据后再分析。\n\n诊断标签: INVALID_INPUT"
+}
